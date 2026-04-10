@@ -10,12 +10,18 @@ checking for a known list of non-Claude model / brand names.
 
 ## Matching strategy (v1.6.1)
 
-ASCII keywords use **word-boundary regex** (``\\b<kw>\\b``,
+ASCII keywords use a **leading word-boundary regex** (``\\b<kw>``,
 case-insensitive) to avoid substring collisions with common English
 words. For example, under the v1.6 substring approach, ``"aws"``
 would spuriously match ``"laws"`` / ``"paws"`` / ``"draws"``; the
 v1.6.1 word-boundary approach only matches ``aws`` as a standalone
 token. Codex review finding, 2026-04-11.
+
+v1.6.2 note: the trailing ``\\b`` was loosened to a negative-letter
+lookahead (``(?![a-zA-Z])``) so version-suffixed model names like
+``Qwen2.5``, ``GPT4``, or ``GLM4.6`` still match while alphabetic
+continuations (``grokking``, ``glmrules``) remain blocked. Codex
+review round 3, 2026-04-11.
 
 CJK keywords (Chinese brand names) use plain substring matching
 because CJK scripts have no word-boundary concept in Python's ``re``
@@ -105,11 +111,11 @@ NON_CLAUDE_IDENTITY_KEYWORDS = (
 )
 
 
-# Precompile word-bounded regex for ASCII keywords. CJK keywords stay
-# as plain substrings because \b has no useful definition for CJK in
-# Python's re engine.
+# Precompile ASCII regex with a leading word boundary and a trailing
+# non-letter lookahead. CJK keywords stay as plain substrings because
+# \b has no useful definition for CJK in Python's re engine.
 _ASCII_KEYWORD_PATTERNS = tuple(
-    (kw, re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE))
+    (kw, re.compile(r"\b" + re.escape(kw) + r"(?![a-zA-Z])", re.IGNORECASE))
     for kw in NON_CLAUDE_IDENTITY_KEYWORDS
     if kw.isascii()
 )
@@ -121,10 +127,10 @@ _CJK_KEYWORDS = tuple(
 def find_non_claude_identities(text: str) -> list:
     """Return a sorted list of non-Claude identity keywords found in text.
 
-    ASCII keywords match only as whole words (word-bounded regex,
-    case-insensitive). CJK keywords match as plain substrings because
-    Python's ``re`` engine has no meaningful word-boundary semantics
-    for CJK scripts.
+    ASCII keywords match with a leading word boundary and a trailing
+    non-letter lookahead (case-insensitive). CJK keywords match as
+    plain substrings because Python's ``re`` engine has no meaningful
+    word-boundary semantics for CJK scripts.
 
     Args:
         text: The model response text to scan. Empty string, None, or

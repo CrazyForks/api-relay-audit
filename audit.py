@@ -549,16 +549,18 @@ def run_tool_substitution_test(client, sleep=1.0):
 
 
 # ============================================================
-# Section 3b2: Non-Claude Identity Detection (Step 5 helper, v1.6 / v1.6.1)
+# Section 3b2: Non-Claude Identity Detection (Step 5 helper, v1.6 / v1.6.2)
 # ============================================================
 #
 # Concept inspired by hvoy.ai zzsting88/relayAPI claude_detector.py
 # IDENTITY_NEGATIVE_PATTERNS (verified 2026-04-11). The repo has no
 # LICENSE file, so this is an independent clean-room reimplementation.
 #
-# v1.6.1: ASCII keywords match as word-bounded regex (\b<kw>\b) so
-# "laws" / "paws" / "draws" do not false-trip "aws". CJK keywords use
-# substring because \b has no useful CJK semantics. Codex finding.
+# v1.6.2: ASCII keywords match with a leading word boundary and a
+# trailing non-letter lookahead (\b<kw>(?![a-zA-Z])) so "laws" / "paws"
+# / "draws" do not false-trip "aws", while version suffixes (Qwen2.5,
+# GPT4, GLM4.6) still match. CJK keywords use substring because \b has
+# no useful CJK semantics. Codex review round 3.
 
 NON_CLAUDE_IDENTITY_KEYWORDS = (
     # Legacy (v2.1)
@@ -572,9 +574,10 @@ NON_CLAUDE_IDENTITY_KEYWORDS = (
 )
 
 
-# Precompile ASCII word-boundary patterns; CJK keywords stay substring-based.
+# Precompile ASCII regex with leading word boundary + non-letter lookahead;
+# CJK keywords stay substring-based.
 _NON_CLAUDE_ASCII_PATTERNS = tuple(
-    (kw, re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE))
+    (kw, re.compile(r"\b" + re.escape(kw) + r"(?![a-zA-Z])", re.IGNORECASE))
     for kw in NON_CLAUDE_IDENTITY_KEYWORDS
     if kw.isascii()
 )
@@ -586,7 +589,8 @@ _NON_CLAUDE_CJK_KEYWORDS = tuple(
 def find_non_claude_identities(text):
     """Return sorted list of non-Claude identity keywords found in text.
 
-    ASCII keywords: word-bounded regex, case-insensitive.
+    ASCII keywords: leading word boundary + non-letter lookahead,
+    case-insensitive.
     CJK keywords: plain substring match.
     Returns empty list on empty/None input.
     """

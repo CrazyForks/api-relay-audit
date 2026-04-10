@@ -213,3 +213,43 @@ class TestFindNonClaudeIdentities:
         matches = find_non_claude_identities("我是通义千问,由阿里巴巴创建。")
         assert "通义" in matches
         assert "千问" in matches
+
+    # ----- v1.6.2 trailing lookahead (Codex MEDIUM finding) -----
+
+    def test_qwen_with_version_suffix_matches(self):
+        """v1.6.2 Codex finding: version-suffixed Qwen should match with
+        trailing non-letter lookahead (fixes Qwen2.5 false negatives)."""
+        text = "I am Qwen2.5-72B, a large language model."
+        matches = find_non_claude_identities(text)
+        assert "qwen" in matches
+
+    def test_glm_with_digit_suffix_matches(self):
+        """v1.6.2 Codex finding: GLM4.6 must match despite digit suffix,
+        and Zhipu brand mention should still be caught."""
+        text = "I am GLM4.6 made by Zhipu AI."
+        matches = find_non_claude_identities(text)
+        assert "glm" in matches
+        assert "zhipu" in matches
+
+    def test_gpt_with_digit_suffix_matches(self):
+        """v1.6.2 Codex finding: GPT4 must match despite digit suffix."""
+        text = "I am GPT4 by OpenAI."
+        matches = find_non_claude_identities(text)
+        assert "gpt" in matches
+
+    def test_underscore_separator_matches_glm(self):
+        """v1.6.2 Codex finding: underscores are non-letters so glm_large
+        must still match the glm keyword."""
+        text = "I use glm_large from the model hub."
+        matches = find_non_claude_identities(text)
+        assert "glm" in matches
+
+    def test_version_suffix_preserves_substring_safety(self):
+        """v1.6.2 Codex finding: loosening the trailing boundary must not
+        reintroduce v1.6 substring false positives."""
+        for text in (
+            "I comply with all local laws.",
+            "I follow glmrules.txt",
+            "I'm grokking your question.",
+        ):
+            assert find_non_claude_identities(text) == []
