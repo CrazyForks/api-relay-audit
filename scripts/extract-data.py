@@ -101,12 +101,51 @@ def parse_report(file_path):
     if "owned_by: openai" in content_lower:
         api_format = "Both" if "owned_by: vertex-ai" in content_lower else "OpenAI"
 
+    # Tool-call package substitution (Step 8, AC-1.a)
+    tool_substitution = {"detected": False, "probes": []}
+    sub_section_match = re.search(
+        r"## 8\. Tool-Call Package Substitution.*?(?=\n## |\Z)",
+        content, re.DOTALL,
+    )
+    if sub_section_match:
+        section = sub_section_match.group(0)
+        # Detection verdict from the flag line
+        if "SUBSTITUTED" in section or "substitution detected" in section.lower():
+            tool_substitution["detected"] = True
+        # Parse the per-probe table rows
+        for line in section.split("\n"):
+            if not line.startswith("| "):
+                continue
+            # Skip the header and separator rows
+            if "Manager" in line or "---" in line:
+                continue
+            parts = [p.strip() for p in line.split("|")[1:-1]]
+            if len(parts) >= 4:
+                verdict_cell = parts[3]
+                if "exact" in verdict_cell:
+                    verdict = "exact"
+                elif "whitespace" in verdict_cell:
+                    verdict = "whitespace"
+                elif "SUBSTITUTED" in verdict_cell:
+                    verdict = "substituted"
+                elif "skipped" in verdict_cell:
+                    verdict = "error"
+                else:
+                    continue
+                tool_substitution["probes"].append({
+                    "manager": parts[0],
+                    "expected": parts[1].strip("`"),
+                    "received": parts[2].strip("`"),
+                    "verdict": verdict,
+                })
+
     return {
         "domain": domain,
         "promptTests": prompt_tests,
         "jailbreakTests": jailbreak_tests,
         "contextTests": context_tests,
         "apiFormat": api_format,
+        "toolSubstitution": tool_substitution,
     }
 
 
@@ -139,6 +178,7 @@ def main():
         entry["jailbreakTests"] = details["jailbreakTests"]
         entry["contextTests"] = details["contextTests"]
         entry["apiFormat"] = details["apiFormat"]
+        entry["toolSubstitution"] = details["toolSubstitution"]
 
     data_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n  data.json updated: {data_path}")

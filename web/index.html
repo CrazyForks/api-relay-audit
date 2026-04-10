@@ -62,7 +62,7 @@ footer{text-align:center;color:var(--text2);font-size:.75rem;margin-top:60px;pad
 <body>
 <div class="container">
   <h1>🛡️ API 中转站安全检测报告</h1>
-  <p class="subtitle">检测中转站是否存在 Token 注入、Prompt 泄露、指令覆盖等安全风险</p>
+  <p class="subtitle">检测中转站是否存在 Token 注入、Prompt 泄露、指令覆盖、工具调用改写 (AC-1.a) 等安全风险 · <a href="https://arxiv.org/abs/2604.08407" style="color:var(--text2)">threat model: arXiv:2604.08407</a></p>
   <div class="ranking" id="ranking"></div>
   <div class="grid" id="cards"></div>
   <div id="detail"></div>
@@ -227,8 +227,26 @@ function showDetail(i){
           <td class="pass">${esc(d.contextLength.verdict)}</td>
           <td>最大 ${esc(d.contextLength.maxChars)} 字符 / ${esc(d.contextLength.maxTokens)} tokens</td>
         </tr>
+        ${d.toolSubstitution ? `<tr>
+          <td>工具调用改写 (AC-1.a)</td>
+          <td class="${d.toolSubstitution.detected?'fail':'pass'}">${d.toolSubstitution.detected?'🔴 改写':'🟢 完整'}</td>
+          <td>${d.toolSubstitution.probes && d.toolSubstitution.probes.length ? d.toolSubstitution.probes.length+' 个包管理器探测' : '—'}</td>
+        </tr>` : ''}
       </table>
     </div>
+    ${d.toolSubstitution && d.toolSubstitution.probes && d.toolSubstitution.probes.length ? `
+    <div class="section">
+      <h3>📦 工具调用改写探测 (AC-1.a)</h3>
+      <table class="test-table">
+        <tr><th>包管理器</th><th>预期</th><th>实际</th><th>判定</th></tr>
+        ${d.toolSubstitution.probes.map(p=>`<tr>
+          <td>${esc(p.manager)}</td>
+          <td style="font-family:monospace;font-size:.8rem">${esc(p.expected)}</td>
+          <td style="font-family:monospace;font-size:.8rem;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.received)}</td>
+          <td class="${p.verdict==='substituted'?'fail':p.verdict==='whitespace'?'warn-text':'pass'}">${p.verdict==='substituted'?'🔴 改写':p.verdict==='whitespace'?'🟡 噪声':p.verdict==='error'?'⚪ 跳过':'🟢 完整'}</td>
+        </tr>`).join('')}
+      </table>
+    </div>` : ''}
     ${promptTestsHtml}
     ${jailbreakTestsHtml}
     ${contextTestsHtml}
