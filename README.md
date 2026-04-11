@@ -6,6 +6,36 @@ Security audit tool for third-party AI API relay/proxy services. Detects hidden 
 
 Threat model follows the AC-1 / AC-1.a / AC-1.b / AC-2 taxonomy from Liu et al., [*Your Agent Is Mine: Measuring Malicious Intermediary Attacks on the LLM Supply Chain*, arXiv:2604.08407](https://arxiv.org/abs/2604.08407). Stream-level detection concept sourced from [hvoy.ai](https://hvoy.ai/) / `zzsting88/relayAPI` `claude_detector.py` (verified against source 2026-04-11, clean-room reimplementation).
 
+## 🚀 Quick Start (30 seconds)
+
+One command to audit any relay — no install, no clone, no Python dependencies beyond `curl`:
+
+```bash
+curl -sO https://raw.githubusercontent.com/toby-bridges/api-relay-audit/master/audit.py
+python audit.py --key <YOUR_KEY> --url <BASE_URL> --output report.md
+```
+
+For **Web3 / wallet users**, add Step 11 (SlowMist signature isolation probes):
+
+```bash
+python audit.py --key <YOUR_KEY> --url <BASE_URL> --profile web3 --output report.md
+```
+
+Output: a structured Markdown report with a risk summary (LOW / MEDIUM / HIGH) at the top plus per-step details. See the [11-Step Audit table](#11-step-audit) and [Architecture section](#architecture) below.
+
+## Quality Assurance
+
+This project uses an unusually rigorous quality pipeline for a CLI tool:
+
+- **319 pytest unit tests** across 11 test files (from 114 baseline in v2.1, +205 in v2.3)
+- **6 independent Codex review rounds** during v2.2 → v2.3 development
+- **10 real bugs caught and fixed** by those reviews before ship (2 MEDIUM + 1 NIT + 1 LOW in early rounds, 1 MEDIUM version-suffix, 1 MEDIUM + 1 LOW SSE edge cases, 1 MEDIUM parity + 2 LOW residual)
+- **Byte-level dual-distribution parity** enforced by `test_risk_matrix_character_identical` — the modular and standalone versions cannot drift
+- **Every ported concept has docstring attribution** (LiteLLM Apache-2.0 secret regexes, hvoy.ai clean-room reimplementation for SSE integrity, SlowMist inspiration for Web3 probes) with local clones of all upstream repos for verification
+- **Zero regressions**: every fix in every Codex round was accompanied by a regression test so the bug class cannot return
+
+See [`ROADMAP.md`](./ROADMAP.md) for the complete list of shipped features, deferred backlog, and the "explicitly NOT doing" decisions with rationale.
+
 ## What's New in v2.3 (v3 Feature Release, PR 3: Stream Integrity)
 
 v2.3 adds **Step 10: Stream Integrity (AC-1 SSE-layer)**. Opens an Anthropic streaming request with extended thinking enabled, captures every server-sent event, and verifies four structural invariants against a known-good Anthropic SSE schema:
@@ -291,28 +321,88 @@ MIT
 
 ## 中文说明
 
-全面审计第三方 AI API 中转站（反代/转发站）的安全性、可靠性和透明度。
+全面审计第三方 AI API 中转站（反代/转发站）的安全性、可靠性和透明度。针对普通用户（Claude / GPT API 使用者）和 Web3 钱包用户两个受众,通过一个 `--profile` 开关切换。
 
-### v2 新增
+### 为什么要用这个工具
 
-v2 新增**第 8 步：AC-1.a 工具调用改写检测**，通过让模型逐字复述四条固定的包安装命令（pip/npm/cargo/go），按 token 对比返回文本，识别恶意中转站在返回路径上偷换包名（例如 `requests` → `reqeusts` 拼写投毒）。风险矩阵升级为三维判定——只要检测到任何一次工具调用改写，单独就会直接升级为 HIGH，无需其他指标叠加。同步新增两个 CLI 开关：`--skip-tool-substitution` 跳过第 8 步，`--warmup N` 在审计前先发 N 次无害请求，作为对 AC-1.b 请求次数门控后门的部分缓解。
+中转站可能在你的请求里做手脚:
+- **注入隐藏 system prompt**("你是 Kiro,由 Amazon 制造"/"你是 GLM")
+- **截断上下文窗口**(付了 200K token 的钱,实际只给你 50K)
+- **覆盖用户指令**(你说"你是 Claude",它偷偷改成"你是 DeepSeek")
+- **错误响应泄漏凭证**(把你的 API Key / 上游 URL / 环境变量写进错误体)
+- **流式响应注入假事件**(SSE 事件类型非法、usage 字段被改写、thinking 签名为空)
+- **改写包安装命令**(`pip install requests` → `reqeusts` 拼写投毒,给 agent 的宿主机植入后门)
+- **Web3 场景**:路由到廉价替代模型(GLM / 通义千问 / DeepSeek),或诱导泄漏私钥/签署交易
+
+本工具用 **11 个独立 step** 依次验证这些猫腻,每步有独立的三态判定(clean / anomaly / inconclusive),最后汇总成 **6 维风险矩阵** 给出 LOW / MEDIUM / HIGH 整体评级。
+
+### 11 步审计一览
+
+| # | 检测项 | 针对攻击 |
+|---|---|---|
+| 1 | 基础设施侦察 | DNS / WHOIS / SSL / CDN / 面板识别(New API, One API) |
+| 2 | 模型列表枚举 | 可用模型 / `owned_by` 字段 / 后端通道识别 |
+| 3 | Token 注入检测 | delta 法比对 `input_tokens` 实际 vs 预期 |
+| 4 | Prompt 提取 | 3 种直接提取攻击,识别可泄漏的隐藏 system prompt |
+| 5 | 指令冲突 + 身份替换 | 猫测试 + 22 关键词非 Claude 身份检测(GLM/DeepSeek/Qwen/通义/千问/智谱/豆包/文心) |
+| 6 | 越狱测试 | 3 种越狱方法测试反提取防护 |
+| 7 | 上下文长度扫描 | 5 个 canary marker + 二分查找真实截断边界 |
+| 8 | 工具调用改写 (AC-1.a) | pip/npm/cargo/go 装包命令 echo,字符级 diff 检测拼写投毒 |
+| 9 | 错误响应泄漏 (AC-2 adjacent) | 7 个故意破坏的请求,扫描错误体/响应头的凭证回显/上游 URL/环境变量/栈追踪/LiteLLM 内部字段/Bedrock guardrail PII echo |
+| 10 | 流完整性 (AC-1 SSE 层) | Anthropic 流请求 + 4 个不变量检测(事件白名单/usage 单调性/usage 一致性/thinking 签名有效性) |
+| 11 | Web3 Prompt 注入(`--profile web3` 专属) | 3 个 SlowMist 签名隔离探针(转账指引 / 签名拒绝 / 私钥泄漏拒绝) |
 
 ### 三种使用方式
 
-**方式 A — 一行命令（零安装）：**
+**方式 A — 一行命令(零安装):**
 ```bash
 curl -sO https://raw.githubusercontent.com/toby-bridges/api-relay-audit/master/audit.py
-python audit.py --key <你的KEY> --url <中转站地址>
+
+# 普通用户
+python audit.py --key <你的KEY> --url <中转站地址> --output report.md
+
+# Web3 / 钱包用户(额外运行 Step 11)
+python audit.py --key <你的KEY> --url <中转站地址> --profile web3 --output report.md
 ```
 
-**方式 B — OpenClaw Skill：** 安装 [`SKILL.md`](./SKILL.md) 后，直接对 agent 说"测试这个中转站"。
+**方式 B — OpenClaw Skill:** 安装 [`SKILL.md`](./SKILL.md) 后,直接对 agent 说"测试这个中转站"。
 
-**方式 C — 开发者模式：** `git clone` 后使用模块化代码，可修改、扩展、跑测试。
+**方式 C — 开发者模式:** `git clone` 后使用模块化代码,可修改、扩展、跑全套 319 个 pytest 测试。
 
-### 风险等级
+### 6 维风险矩阵
+
+评级基于 6 个独立维度:
+
+| 维度 | 步骤 | 触发条件 |
+|---|---|---|
+| D1 | Step 3 | Token 注入 > 100 tokens |
+| D2 | Step 5 | 用户 system prompt 被覆盖(猫测试失败 / 身份被替换) |
+| D3 | Step 8 | 检测到工具调用改写 |
+| D4 | Step 9 | 错误响应泄漏凭证(critical 或 high 严重度) |
+| D5 | Step 10 | 流完整性异常(未知 SSE 事件 / usage 被改写 / thinking 签名为空 / 非 Claude 流模型) |
+| D6 | Step 11 | Web3 prompt 注入(仅 `--profile web3\|full` 激活) |
+
+**规则**(first match wins):
+- `D3 or D4 or D5 or D6` → **HIGH**(任何一个触发即 HIGH)
+- `D1 and D2` → **HIGH**
+- `D1` 或 `D2` 单独触发 → **MEDIUM**
+- 任何 inconclusive(D3i/D4i/D4m/D5i/D6i) → **MEDIUM**
+- 其他 → **LOW**
+
+### 风险等级对照
 
 | 等级 | 判定条件 | 建议 |
 |------|----------|------|
-| LOW | 无注入 + 指令正常 + 上下文完整 | 可放心使用 |
-| MEDIUM | 轻微注入（<100 tokens）或 prompt 可提取 | 简单任务可用 |
-| HIGH | 注入 >500 tokens 或指令被覆盖 | 不推荐使用 |
+| LOW | 6 个维度全部 clean | 可放心使用 |
+| MEDIUM | 轻微注入(<100 tokens)、prompt 可提取、或任何 step inconclusive | 简单任务可用,复杂工作流需谨慎 |
+| HIGH | 任一 D3-D6 触发,或 D1+D2 同时触发 | 不推荐使用 |
+
+### 项目质量数据
+
+- **319 个 pytest 单元测试**(从 v2.1 的 114 增长到 v2.3 的 319)
+- **6 轮独立 Codex 代码审查**,发现并修复 10 个真实 bug
+- **零回归**:每次修复都带 regression test
+- **双分发字节级一致性**:modular 和 standalone 版本不能漂移
+- 每一个借鉴的概念都有文档归属(LiteLLM Apache-2.0 regex / hvoy.ai clean-room / SlowMist 灵感)
+
+完整的已交付功能清单、下一步路线图、和明确不做的事项,见 [`ROADMAP.md`](./ROADMAP.md)。深度工程叙事(架构决策、踩坑记录)见 [`FOR_JOHN.md`](./FOR_JOHN.md)。
