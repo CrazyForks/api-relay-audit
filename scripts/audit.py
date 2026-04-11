@@ -287,6 +287,7 @@ def test_prompt_extraction(client, report):
 
     if not leaked:
         report.p("\nAll extraction attempts failed (anti-extraction mechanism may exist).")
+        report.flag("green", "Prompt extraction tests passed (no hidden prompt leaked)")
 
     print(f"  Done: prompt extraction (leaked: {'yes' if leaked else 'no'})")
     return leaked
@@ -421,6 +422,7 @@ def test_jailbreak(client, report):
         report.p(f"\nInferred hidden prompt characteristics: {', '.join(set(leaked_keywords))}")
     else:
         report.p("\nJailbreak tests did not extract useful information.")
+        report.flag("green", "Jailbreak tests passed (no identity keywords leaked)")
 
     print(f"  Done: jailbreak tests (leaked keywords: {len(set(leaked_keywords))})")
 
