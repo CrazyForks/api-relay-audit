@@ -213,6 +213,25 @@ class TestFindNonClaudeIdentities:
         matches = find_non_claude_identities("I am Kimi by Moonshot AI.")
         assert "kimi" in matches
 
+    def test_not_without_comma_still_rejected_v173(self):
+        """v1.7.3 Codex Round 6 LOW fix: 'I am Claude not GPT' (without
+        a comma) must ALSO be rejected. Previously the `not` word was
+        counted as a filler, so the 0-4 filler window bridged to GPT.
+        The fix adds a negative lookahead `(?!not\\s|isn't\\s|...)` to
+        the filler pattern."""
+        text = "I am Claude not GPT, just Claude."
+        matches = find_non_claude_identities(text)
+        assert "gpt" not in matches, (
+            "v1.7.3 regression: 'not' as filler word should block the "
+            "strict keyword match"
+        )
+
+    def test_unlike_also_rejected_v173(self):
+        """v1.7.3: 'unlike' as a filler word also blocks the match."""
+        text = "I am a model unlike GPT in that it has a knowledge cutoff"
+        matches = find_non_claude_identities(text)
+        assert "gpt" not in matches
+
     # ----- v1.6.1 word-boundary matching (Codex LOW finding) -----
 
     def test_aws_not_matched_inside_laws(self):

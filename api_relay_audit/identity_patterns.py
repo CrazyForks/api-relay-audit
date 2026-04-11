@@ -149,17 +149,20 @@ def _build_strict_pattern(keyword):
 
     Matches only when the keyword appears after an identity anchor
     phrase, optionally separated by 0-4 filler words (articles,
-    adjectives, ``called``, ``named``, etc.). This prevents false
-    positives like ``"I am Claude, not GPT"`` because the filler
-    before ``gpt`` would have to include a comma which doesn't
-    match ``\\w+\\s+``.
+    adjectives, ``called``, ``named``, etc.).
+
+    **v1.7.3 Codex fix**: the filler pattern now uses
+    ``(?!not\\s|isn't\\s|aren't\\s)`` to exclude negation words.
+    This prevents false positives like ``"I am Claude not GPT"``
+    (without a comma) which v1.7.2 still matched because "Claude not"
+    counted as two filler words bridging the anchor to the keyword.
 
     The trailing ``(?![a-zA-Z])`` preserves the v1.6.2 version-suffix
     fix so ``GPT4`` still matches.
     """
     return re.compile(
         r"(?:" + _IDENTITY_ANCHOR_ALTERNATION + r")"
-        r"\s+(?:\w+\s+){0,4}?"
+        r"\s+(?:(?!not\s|isn'?t\s|aren'?t\s|wasn'?t\s|weren'?t\s|unlike\s)\w+\s+){0,4}?"
         r"\b" + re.escape(keyword) + r"(?![a-zA-Z])",
         re.IGNORECASE,
     )
