@@ -41,6 +41,129 @@ v2 added **Step 8: AC-1.a tool-call substitution detection**, which catches mali
 | 8 | Tool-Call Substitution (AC-1.a) | Package-name rewriting on the return path (`requests` → `reqeusts` typosquat) |
 | 9 | Error Response Leakage (AC-2 adjacent) | Echoed `Authorization` / API key prefix / upstream URL / env var name / FS path / stack trace / LiteLLM internal field / Bedrock guardrail PII in error responses |
 | 10 | Stream Integrity (AC-1 SSE) | SSE event whitelist + usage monotonicity + thinking signature validity + stream model identity on an Anthropic streaming response |
+| 11 | Web3 Prompt Injection (profile=web3\|full) | 3 probes for wallet-safety refusal: transfer guidance / sign-transaction refusal / private key leak refusal. Safe-priority classifier with hard-injected marker override |
+
+For the full list of planned and deferred work, see [`ROADMAP.md`](./ROADMAP.md).
+
+---
+
+## Architecture
+
+### Dual-distribution model
+
+The same 11-step audit logic ships in two parallel forms, kept
+byte-identical by a dedicated parity test:
+
+- **Standalone** (`audit.py`): a single ~2500-line file with zero Python
+  dependencies beyond the stdlib. All HTTP goes through `curl`
+  subprocess. One `curl -sO` download + one `python audit.py` run. This
+  is the path most users take.
+- **Modular** (`api_relay_audit/` + `scripts/audit.py`): a proper Python
+  package with `httpx` for HTTP, full pytest suite, and per-module
+  docstrings. This is the path developers extend.
+
+Every change to one distribution must be mirrored into the other.
+`tests/test_dual_distribution_parity.py::test_risk_matrix_character_identical`
+enforces the invariant at the risk-matrix layer by doing a byte-for-byte
+comparison. `tests/test_web3_injection.py::TestWeb3MarkerParity`
+enforces it at the Web3 probe data layer.
+
+### 11-step pipeline
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  Step 1  Infrastructure Recon     DNS / WHOIS / SSL / headers  │
+│  Step 2  Model List                /v1/models enumeration      │
+│  Step 3  Token Injection           delta method on input_tokens│
+│  Step 4  Prompt Extraction         3 direct attacks            │
+│  Step 5  Instruction Conflict      cat test + identity spoof   │
+│  Step 6  Jailbreak Tests           3 anti-extraction probes    │
+│  Step 7  Context Length            canary markers + bin search │
+│  Step 8  Tool-Call Substitution    AC-1.a character-level diff │
+│  Step 9  Error Response Leakage    AC-2 adjacent, 7 triggers   │
+│  Step 10 Stream Integrity          AC-1 SSE-level, 4 invariants│
+│  Step 11 Web3 Prompt Injection     profile=web3 only, 3 probes │
+│                                                                │
+│  Overall Rating (6D risk matrix)                               │
+└────────────────────────────────────────────────────────────────┘
+```
+
+Each step returns a tri-state verdict (clean / anomaly / inconclusive)
+into a shared `Reporter` which builds the Markdown report with a risk
+summary header at the top and per-step detail sections below.
+
+### 6D risk matrix
+
+The overall rating aggregates 6 orthogonal risk dimensions:
+
+| Dim | Step | Triggered when... |
+|---|---|---|
+| D1 | 3 | Token injection > 100 tokens |
+| D2 | 5 | User system prompt overridden (cat test fails or identity spoofed) |
+| D3 | 8 | Tool-call package substitution detected |
+| D4 | 9 | Error response leaks credentials (critical/high severity) |
+| D5 | 10 | Stream integrity anomaly (unknown events / usage rewrite / empty signatures / non-Claude stream model) |
+| D6 | 11 | Web3 prompt injection (only active under `--profile web3\|full`) |
+
+Plus inconclusive variants (`D3i`, `D4i`, `D4m`, `D5i`, `D6i`) for
+cases where a step ran but could not reach a clean/anomaly verdict.
+
+Rules (first match wins):
+- `D3 or D4 or D5 or D6` → **HIGH**
+- `D1 and D2` → **HIGH**
+- `D1` or `D2` → **MEDIUM**
+- `D3i or D4i or D4m or D5i or D6i` → **MEDIUM**
+- otherwise → **LOW**
+
+### `--profile` audience selector
+
+Instead of maintaining two git branches for general vs Web3 audiences,
+the tool uses a runtime flag:
+
+| Profile | Runs | Suitable for |
+|---|---|---|
+| `general` (default) | Steps 1-10 | Regular API relay users (95% case) |
+| `web3` | Steps 1-11 | Wallet / crypto users |
+| `full` | Steps 1-11 + any future profile-gated steps | Security researchers |
+
+The general user runs the tool exactly as before — no CLI change, no
+extra work, no Step 11 overhead. Web3 users opt in with one flag.
+
+This design preserves the dual-distribution invariant, the single
+test suite, the memory/documentation consistency, and the
+"one-curl-download" standalone story. See [`ROADMAP.md`](./ROADMAP.md)
+for why git branches were rejected.
+
+### Key design principles
+
+1. **Detection based on invariants, not signatures.** Token counts are
+   non-forgeable integers (Step 3). Canary markers are deterministic
+   substrings (Step 7). SSE event types are a closed schema (Step 10).
+   The tool doesn't look for known-bad patterns — it verifies that
+   known-good invariants hold.
+2. **Tri-state verdicts, not booleans.** Every step returns clean,
+   anomaly, or **inconclusive**. A relay that blocks a probe is not
+   clean — it's suspicious. Silent swallowing becomes a detectable
+   signal.
+3. **Clean-room reimplementation for ported concepts.** Step 9 regexes
+   are adapted from LiteLLM's Apache-2.0 `_logging.py`. Step 10 SSE
+   schema comes from hvoy.ai's `claude_detector.py` (no LICENSE —
+   concepts and schema field names are not copyrightable). Step 11
+   probes follow SlowMist's signature isolation principle. Every
+   port has attribution in the module docstring.
+4. **Codex review loop for non-trivial PRs.** Independent Codex reviews
+   caught 10 real bugs across this feature set — every one would have
+   shipped as a false-negative or parity violation otherwise. The
+   review round is a 2-5 minute cost that prevents much larger downstream
+   costs.
+5. **Pareto-optimal scope.** Every step has to earn its place: does it
+   cover a dimension nothing else catches, does the detection stay
+   valid across relay variants, can it be implemented without breaking
+   zero-dep? Steps that fail any of these get deferred (see
+   [`ROADMAP.md`](./ROADMAP.md) "Explicitly NOT doing").
+
+For a deep-dive engineering narrative (in Chinese), see
+[`FOR_JOHN.md`](./FOR_JOHN.md).
 
 ---
 
@@ -85,21 +208,34 @@ python scripts/audit.py --key <YOUR_KEY> --url <BASE_URL> --output report.md
 #### Project Structure
 
 ```
-audit.py                  # Standalone version (zero-dependency, curl-only)
-SKILL.md                  # OpenClaw skill definition
-api_relay_audit/          # Shared Python modules
-  client.py               #   API client (Anthropic + OpenAI + curl fallback)
-  reporter.py             #   Markdown report generator
-  context.py              #   Context length test algorithm
+audit.py                             # Standalone zero-dep version (~2500 LOC)
+SKILL.md                             # OpenClaw skill definition
+ROADMAP.md                           # Shipped / near-term / deferred backlog
+FOR_JOHN.md                          # Engineering narrative (Chinese)
+api_relay_audit/                     # Modular package (requires httpx)
+  client.py                          #   APIClient with auto-detection + streaming
+  context.py                         #   Context length canary + binary search
+  error_leakage.py                   #   Step 9 AC-2 scan (7 triggers + regex)
+  identity_patterns.py               #   Step 5 non-Claude identity detection
+  reporter.py                        #   Markdown report builder with risk flags
+  stream_integrity.py                #   Step 10 SSE analyzer + StreamSignals
+  tool_substitution.py               #   Step 8 AC-1.a package substitution
+  web3/                              #   Profile=web3 subpackage
+    injection_probes.py              #     Step 11 SlowMist signature isolation
 scripts/
-  audit.py                #   Main 7-step audit (modular version, requires httpx)
-  context-test.py         #   Standalone context length test
-  extract-data.py         #   Extract structured data from reports
-tests/                    #   80 pytest unit tests
+  audit.py                           #   11-step orchestrator (entry point)
+  context-test.py                    #   Standalone context length probe
+  extract-data.py                    #   Report → JSON extractor for dashboard
+tests/                               # 319 pytest tests across 11 files
+  test_dual_distribution_parity.py   #   byte-level parity guard
+  test_client_stream.py              #   streaming SSE parser unit tests
+  test_stream_integrity.py           #   Step 10 verdict analysis tests
+  test_web3_injection.py             #   Step 11 probes + classifier tests
+  ...
 web/
-  index.html              #   Dashboard (single-page, vanilla JS)
+  index.html                         # Dashboard (single-page vanilla JS)
 deploy/
-  deploy-nas.sh           #   Docker/nginx deployment script
+  deploy-nas.sh                      # Docker/nginx deployment script
 ```
 
 #### Run Tests
@@ -127,6 +263,8 @@ All three options share the same CLI interface:
 | `--skip-error-leakage` | No | Skip Step 9 AC-2 adjacent error response leakage test | `False` |
 | `--aggressive-error-probes` | No | Enable 256 KB oversized-context probe in Step 9 (may incur billing) | `False` |
 | `--skip-stream-integrity` | No | Skip Step 10 SSE-level stream integrity test | `False` |
+| `--profile` | No | Audience selector: `general` (Steps 1-10, default), `web3` (adds Step 11 for wallet users), `full` (all steps) | `general` |
+| `--skip-web3-injection` | No | Skip Step 11 Web3 injection probes (only runs under `--profile web3\|full`) | `False` |
 | `--warmup` | No | Send N benign requests before the audit (partial AC-1.b mitigation) | `0` |
 | `--timeout` | No | Request timeout (seconds) | `120` |
 
@@ -134,9 +272,12 @@ All three options share the same CLI interface:
 
 | Level | Criteria | Recommendation |
 |-------|----------|----------------|
-| LOW | No injection + instructions work + full context + no tool-call substitution + no error leakage + clean stream integrity | Safe to use |
-| MEDIUM | Minor injection (<100 tokens) OR prompt extractable OR Step 8/9/10 inconclusive OR Step 9 medium-only leakage | OK for simple tasks |
-| HIGH | Injection >100 tokens AND instructions overridden, OR any tool-call substitution (Step 8), OR Step 9 critical/high leakage (credential echo, upstream URL, env var), OR Step 10 stream integrity anomaly (unknown SSE events, usage rewriting, empty thinking signatures, non-Claude stream model) | Not recommended |
+| LOW | All 6 risk dimensions (D1-D6) clean: no injection, instructions work, full context, no tool-call substitution, no error leakage, clean stream integrity, no Web3 injection (if `--profile web3`) | Safe to use |
+| MEDIUM | Minor injection (<100 tokens) OR prompt extractable OR any of Steps 8/9/10/11 **inconclusive** OR Step 9 medium-only leakage (FS path / stack trace) | OK for simple tasks, use with caution |
+| HIGH | Injection >100 tokens AND instructions overridden, OR **any** of: tool-call substitution (Step 8), critical/high error leakage (Step 9), stream integrity anomaly (Step 10), or Web3 injection detected (Step 11 under `--profile web3`) | Not recommended |
+
+See [`ROADMAP.md`](./ROADMAP.md#architectural-invariants-must-preserve)
+for the full 6D risk matrix rules and dimension definitions.
 
 ## Author
 
