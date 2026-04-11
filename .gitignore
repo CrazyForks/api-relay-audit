@@ -15,6 +15,9 @@ reports/
 .vscode/
 .idea/
 
+# Claude Code local settings (may contain personal paths + tool permissions)
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db

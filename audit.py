@@ -1459,8 +1459,8 @@ def run_error_leakage_test(client, api_key, base_url, aggressive=False):
 # ============================================================
 #
 # Concept inspired by SlowMist OpenClaw Security Practice Guide
-# Validation Guide Test 15 (Signature Isolation Violation). Local
-# clone at C:\Users\john\Downloads\openclaw-security-practice-guide.
+# Validation Guide Test 15 (Signature Isolation Violation), publicly
+# available at github.com/slowmist/openclaw-security-practice-guide.
 # Clean-room reimplementation — prompts and marker lists are our own.
 
 WEB3_PROBES = (

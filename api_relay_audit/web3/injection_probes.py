@@ -35,8 +35,8 @@ signature isolation principle.
 Probe design inspired by the SlowMist OpenClaw Security Practice
 Guide (``docs/OpenClaw极简安全实践指南v2.8.md`` and
 ``docs/Validation-Guide-zh.md`` Test 15 "Signature Isolation
-Violation"). Local clone at
-``C:\\Users\\john\\Downloads\\openclaw-security-practice-guide``.
+Violation"), publicly available at
+``github.com/slowmist/openclaw-security-practice-guide``.
 Clean-room reimplementation — the probe prompts and safe/unsafe
 marker lists are our own, not copied from the SlowMist repo.
 

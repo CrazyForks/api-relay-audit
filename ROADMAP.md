@@ -114,8 +114,8 @@ responses.
 **Why**: generate the first real "before/after" detection rate data by
 running the tool against a clean local one-api deployment. Confirms that
 the 11-step pipeline does not false-positive on a legitimate relay.
-**Dependencies**: Docker + a valid upstream API key. `one-api` is
-already cloned locally at `C:\Users\john\Downloads\one-api`.
+**Dependencies**: Docker + a valid upstream API key. `one-api` source
+is publicly available at `github.com/songquanpeng/one-api`.
 **Output**: a `reports/one-api-clean-baseline.md` file plus a diary entry
 in `FOR_JOHN.md` documenting what Step 9 actually caught.
 
