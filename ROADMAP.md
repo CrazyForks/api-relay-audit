@@ -6,7 +6,7 @@ item has a short rationale so future contributors (including future
 iterations of the author) can quickly reconstruct why a thing is or is not
 on the list.
 
-**Last updated**: 2026-04-11 (session ending at commit `12959f3`)
+**Last updated**: 2026-04-14 (session ending at commit `9e25935`)
 
 **Threat model anchor**: Liu et al., *Your Agent Is Mine: Measuring
 Malicious Intermediary Attacks on the LLM Supply Chain*, arXiv:2604.08407.
@@ -42,7 +42,7 @@ Practice Guide and hvoy.ai `zzsting88/relayAPI` `claude_detector.py`.
   targeting SlowMist signature isolation (transfer guidance / sign refusal
   / private key refusal). Safe-priority classifier with hard-injection
   override for contradictory responses.
-- **Non-Claude identity detection**: 22-keyword tuple with two-tier
+- **Non-Claude identity detection**: 22-keyword tuple (→ 26 in v1.7.7) with two-tier
   matching (strict keywords require identity anchor phrases; lax keywords
   use word-boundary + non-letter lookahead). Catches Chinese-market
   substitutes: GLM / DeepSeek / Qwen / MiniMax / Grok / GPT / ERNIE /
@@ -63,6 +63,30 @@ Practice Guide and hvoy.ai `zzsting88/relayAPI` `claude_detector.py`.
 - FOR_JOHN.md diary chapter, memory files updated, full push to
   `origin/master`
 
+### v1.7.7 (shipped 2026-04-14, 6 commits)
+- **`--transparent-log <path>` (arXiv §7.3)**: append-only JSONL forensic
+  log. Every API request recorded with timestamp, URL, SHA-256 of
+  request/response bytes, status code, transport metadata. Hash only,
+  not body. Hooks into all 4 `APIClient` methods with incremental
+  SHA-256 for streaming. `redact_error()` strips response body from
+  error field to prevent credential leakage (Codex review HIGH fix).
+  `os.makedirs` for parent directory (Codex review MEDIUM fix).
+- **Identity anchor residual fixes**: CJK no-whitespace (`"我是GPT-5"`)
+  via `_CJK_STRICT_PATTERNS` supplementary path; filler cap `{0,4}` →
+  `{0,6}` for verbose self-IDs.
+- **Context-strict tier for warp/windsurf**: new `_CONTEXT_STRICT_KEYWORDS`
+  requiring post-keyword identity signal (punctuation or role word).
+  Eliminates FP on "I am in warp speed" / "I am a windsurf instructor"
+  (Codex review MEDIUM fix). CJK path also enforces suffix constraint
+  with full-width punctuation support (Codex review LOW fix).
+- **26 identity keywords** (from 22: added warp, windsurf, antigravity,
+  deepmind). Three-tier matching: strict (anchor-required), context-strict
+  (anchor + suffix), lax (word-boundary).
+- **493 pytest tests** (from 319, +174 new, zero regressions)
+- **12 CLI flags** (`--transparent-log` added) and 3 profile choices
+- Version sync: scripts/audit.py v2.2 → v2.3, SKILL.md YAML fix,
+  README/CLAUDE.md numbers updated
+
 ---
 
 ## 🔜 Near-term candidates (next 1-2 sessions)
@@ -70,19 +94,7 @@ Practice Guide and hvoy.ai `zzsting88/relayAPI` `claude_detector.py`.
 Pick one of these to start the next session. Each is scoped to fit in a
 single session, has a clear spec, and does not require new infrastructure.
 
-### 1. `--transparent-log <path>` flag (arXiv §7.3 forensic log)
-**Status**: spec'd in `plans/fluttering-spinning-origami.md`, not started
-**Scope**: ~150 LOC new module + ~15 tests + integration in `APIClient`
-**Why**: the paper's §7.3 recommendation — an append-only JSONL log of
-every request with redacted body, router URL, TLS metadata, and SHA-256
-of raw response bytes. **Hash only, not body** — matches paper verbatim,
-keeps entries ≤1.5 KB. Usable as forensic scoping data after a breach is
-discovered.
-**Dependencies**: none. Pure local file I/O. Orthogonal to all detection
-logic. Does not need a test key or live relay.
-**Recommended as next-session starter**.
-
-### 2. Step 12: Crypto Address Substitution (profile=web3|full)
+### 1. Step 12: Crypto Address Substitution (profile=web3|full)
 **Status**: spec'd, deferred from original v3 PR 2
 **Scope**: ~180 LOC new module + ~30 tests
 **Why**: arXiv §5.2 reports a real case of a relay draining an ETH
@@ -94,21 +106,7 @@ addresses use EIP-55 checksum mixed case.
 **Cost of deferring further**: low — no new adversarial case has been
 reported since the original paper.
 
-### 3. Identity anchor residual edges (v1.7.4)
-**Status**: 2 known residuals from Codex Round 6, documented as LOW
-**Scope**: ~30 LOC + 5 tests
-**Why**:
-- **Chinese no-whitespace case**: `"我是GPT-5"` (no space between anchor
-  and keyword) currently misses because the regex requires `\s+`.
-- **>4 filler words case**: `"I'm an advanced conversational AI system
-  fine-tuned by OpenAI called GPT-5"` has 6 filler words, exceeds the
-  `{0,4}` cap.
-**Fix options**: add a separate CJK-anchor pattern that allows zero
-whitespace before the keyword; raise the filler cap to 6 or 8.
-**Risk**: minor — both cases are rare in 200-token identity-test
-responses.
-
-### 4. Local one-api Docker real-world validation
+### 2. Local one-api Docker real-world validation
 **Status**: not a coding task — ops / validation exercise
 **Scope**: 30-60 minutes Docker setup + audit run + write-up
 **Why**: generate the first real "before/after" detection rate data by
@@ -119,7 +117,7 @@ is publicly available at `github.com/songquanpeng/one-api`.
 **Output**: a `reports/one-api-clean-baseline.md` file plus a diary entry
 in `FOR_JOHN.md` documenting what Step 9 actually caught.
 
-### 5. MistTrack AML integration (profile=web3|full, optional)
+### 3. MistTrack AML integration (profile=web3|full, optional)
 **Status**: sketched in SlowMist OpenClaw Practice Guide, not started
 **Scope**: ~100 LOC adapter + external API dependency
 **Why**: SlowMist's "Cross-Skill Pre-flight Check" pattern — when an
