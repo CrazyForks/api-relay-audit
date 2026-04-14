@@ -373,7 +373,7 @@ footer a:hover{color:var(--text)}
           <div class="agent-step-title" data-i18n="agent_step1_title">Install the Skill</div>
         </div>
         <p data-i18n="agent_step1_desc">Run this once in your terminal to add the audit skill to Claude Code:</p>
-        <div class="agent-cmd">
+        <div class="agent-cmd" data-cmd="mkdir -p ~/.claude/commands && curl -sL https://raw.githubusercontent.com/toby-bridges/api-relay-audit/master/SKILL.md -o ~/.claude/commands/api-relay-audit.md">
           <button class="copy-btn" onclick="copyAgentCmd(this)" data-i18n="copy_btn">Copy</button>
           mkdir -p ~/.claude/commands && curl -sL https://raw.githubusercontent.com/toby-bridges/api-relay-audit/master/SKILL.md -o ~/.claude/commands/api-relay-audit.md
         </div>
@@ -701,7 +701,7 @@ function switchAuditTab(tab){
 }
 function copyAgentCmd(btn){
   const block=btn.parentElement;
-  const text=block.innerText.replace(t('copy_btn'),'').replace(t('copied_btn'),'').trim();
+  const text=block.getAttribute('data-cmd')||block.innerText.replace(t('copy_btn'),'').replace(t('copied_btn'),'').trim();
   navigator.clipboard.writeText(text).then(()=>{
     btn.textContent=t('copied_btn');
     setTimeout(()=>btn.textContent=t('copy_btn'),1500);
@@ -779,6 +779,7 @@ function generateCmd(){
     cmd=`curl -sO https://raw.githubusercontent.com/toby-bridges/api-relay-audit/master/audit.py && python3 audit.py --key ${shellEscape(key)} --url ${shellEscape(url)} --model ${model}`;
   }
   const el=document.getElementById('cmd-output');
+  el.setAttribute('data-cmd',cmd);
   const copyBtn=el.querySelector('.copy-btn');
   el.innerHTML='';
   el.appendChild(copyBtn);
@@ -801,9 +802,7 @@ function generateCmd(){
 
 function copyCmdOutput(){
   const el=document.getElementById('cmd-output');
-  // Extract only the command line (skip comment and hint)
-  const lines=el.innerText.split('\n').filter(l=>l.trim()&&!l.startsWith('#')&&!l.startsWith(t('cmd_history_hint').substring(0,10)));
-  const text=lines.slice(0,1).join('\n').replace(t('copy_btn'),'').replace(t('copied_btn'),'').trim();
+  const text=el.getAttribute('data-cmd')||'';
   navigator.clipboard.writeText(text).then(()=>{
     const btn=el.querySelector('.copy-btn');
     btn.textContent=t('copied_btn');
