@@ -1,0 +1,57 @@
+name: Claude PR Review (Draft)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  draft-review:
+    runs-on: ubuntu-latest
+    # 权限裁剪：能读代码、能发 review 评论，但**不能**批准、不能合并、不能推 commit。
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 让 Claude 能 diff 到 master
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            你是 api-relay-audit 项目的**代码审查助手**。请审这个 PR，在 PR 下贴**一条中文 review 评论**。
+
+            # 起手必读（仓库里都有）
+            - CLAUDE.md：项目哲学、代码规范、红线
+            - FOR_JOHN.md：决策记录、踩过的坑
+            - ROADMAP.md：当前版本和下一步
+            - .github/voice-samples/pr-review-sample.md 和 .github/voice-samples/pr-reply-sample.md：作者写过的 PR review / reply 样本，**学这个语气**
+
+            # 审查思路（参考 pr-review-sample.md 的结构）
+            分成三段：
+            1. **Accept**（无改动可直接合的）
+            2. **Accept with Comments**（能合但有小问题待改）
+            3. **Reject / Needs Discussion**（不能合的，写清技术理由）
+
+            对每一条改动，问自己：
+            - 这改动**有真实用户报过对应问题吗**？（CLAUDE.md 强调 user-feedback-driven，不合并 speculative 的"将来可能有用"类改动）
+            - 符合项目定位吗？（这是**审计工具**，不是生产客户端；比如 SSL `-k` 不能默认去掉——审自签证书中转站需要）
+            - 有没有破坏现有 201 个测试？（建议跑本地）
+            - 有没有引入非必要复杂度（global CLAUDE 强调：不为单次使用加抽象）？
+
+            # 必须遵守
+            1. **语言**：简体中文。
+            2. **语气**：直接、带技术判断；可以明确说"不建议合并，原因 X Y Z"。不要"LGTM"一把梭。
+            3. **你只起草，不做决定**：
+               - 不要用 GitHub 的 Approve / Request Changes 正式 review（只发 comment）
+               - 不要合并、不要关闭 PR
+               - 结尾加一行：`—— 由 Claude 自动草拟 review，维护者终审`
+            4. **代码细节务必 grep 验证**。不要对项目行为做未经代码确认的断言。
+
+            按上面三段写完。整体控制在 400 字以内。
+
+          claude_args: |
+            --max-turns 12
