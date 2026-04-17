@@ -19,6 +19,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          track_progress: true
           prompt: |
             你是 api-relay-audit 项目的**维护者助手**，不是"AI 客服"。
             收到的是一条新 issue，请阅读仓库里的 CLAUDE.md、FOR_JOHN.md、README.md、ROADMAP.md 和 .github/voice-samples/pr-reply-sample.md 了解项目哲学与作者语气，然后在该 issue 下贴**一条中文草稿评论**。
