@@ -260,7 +260,24 @@ during the audit runs.
 prohibit audit probing. Need consent per-relay.
 **Cost**: high — multi-session ops work.
 
-### 10. English-first README + blog-post announcement
+### 10. v2.0 — Capability benchmark delta (direct model-substitution detection)
+**Status**: promoted from "future idea" (v1.8 Codex cycle note). The most
+direct signal we do not yet ship: run a small skill-gated prompt set and
+measure accuracy delta vs. a known-honest baseline. If the advertised model
+is Opus 4.6 but the delta is Haiku-shaped, that is substitution evidence
+stronger than any fingerprint.
+**Scope**: 2-3 week project — GPQA / MMLU subset (20-30 questions, rotating
+pool to avoid memoization), grader (can be Claude itself with a strict
+rubric), cost model, baseline corpus build. Not one-session work.
+**Why not now**: ROADMAP #1 (local Docker validation) must run first — we
+need an honest-relay reference before we can claim a "delta" exists.
+Running v2.0 without a baseline produces noise.
+**Dependencies**: curated probe set, grader prompt, baseline data from at
+least one honest relay (local one-api + legitimate upstream key).
+**Risk**: score noise, question leakage into future training corpora,
+grader variance. Need many probes + CI bounds before reporting a verdict.
+
+### 11. English-first README + blog-post announcement
 **Status**: current README has English intro + 中文说明 section
 **Scope**: polish pass + a 500-word X/Twitter announcement thread
 **Why**: broader visibility after the Codex review loop gave us a
@@ -272,6 +289,25 @@ differentiating feature before the announcement.
 ---
 
 ## 🤔 Long-term / uncertain
+
+### 11a. v2.5 — LLMmap Pro active fingerprinting (breaks zero-dep invariant)
+**Status**: sketched but shelved during v1.8 Pareto selection — PyTorch +
+transformers pull ~4.5 GB of dependencies, which directly breaks the
+zero-dependency invariant of the standalone `audit.py`.
+**Scope**: port LLMmap-style active probing (crafted adversarial questions
+whose response distribution distinguishes Claude vs GPT vs LLaMA vs Qwen
+vs DeepSeek) + optional embedding-distance scoring.
+**Blocker**: the zero-dep invariant. Options:
+- Option A: split into a separate repo `api-relay-audit-deep` with
+  heavy deps, linked from README.
+- Option B: keep modular-only, gated behind `pip install
+  api-relay-audit[deep]` extra. Standalone `audit.py` excludes it.
+- Option C: re-implement the classifier as pure numpy+stdlib with
+  pre-trained weights shipped as a blob. Brittle.
+**Decision**: defer until someone demands it. The fingerprinting we ship in
+Step 12 (infra) + future v2.0 (capability delta) together cover the same
+detection question — active prompt-distribution fingerprinting is the
+third orthogonal signal but has the worst cost/benefit of the three.
 
 ### 11. AC-2 active webhook canary
 **Status**: paper describes this as the highest-confidence AC-2 signal
