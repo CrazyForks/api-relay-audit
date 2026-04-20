@@ -1,12 +1,18 @@
 """Tests for api_relay_audit.latency_variance (Step 13, v1.8)."""
 
+import argparse
+
+import pytest
 from unittest.mock import MagicMock
 
 from api_relay_audit.latency_variance import (
+    LATENCY_PROBE_MAX,
+    LATENCY_PROBE_MIN,
     classify_variance,
     detect_bimodality,
     run_latency_variance,
     summarize_latencies,
+    validate_probe_count,
 )
 
 
@@ -205,15 +211,86 @@ class TestRunLatencyVariance:
         assert result["stats"] == {}
 
     def test_latencies_are_positive_floats(self):
-        """Sanity: measured latencies must be >= 0 (monotonic clock
-        via time.time is not guaranteed strictly monotonic, but we
-        don't sleep between t0 and the mocked return, so this is
-        essentially a type check)."""
+        """Sanity: measured latencies must be >= 0. v1.8.1 Codex review
+        #3 moved the clock from ``time.time`` (wall clock) to
+        ``time.perf_counter`` (monotonic, high-resolution), so negative
+        latencies from NTP adjustments are no longer possible.
+
+        NOTE: this test alone is NOT a regression guard against
+        reverting to ``time.time``: on a steady clock, ``lat >= 0.0``
+        holds under either implementation. Codex review #2 flagged this
+        false-green. See ``test_uses_perf_counter_not_wall_clock`` below
+        for the actual clock-source regression test.
+        """
         client = self._make_client(n=3)
         result = run_latency_variance(client, count=3, sleep=0)
         for lat in result["latencies"]:
             assert isinstance(lat, float)
             assert lat >= 0.0
+
+    def test_uses_perf_counter_not_wall_clock(self, monkeypatch):
+        """v1.8.1 Codex review cycle #2 follow-up regression: prove
+        Step 13 calls ``time.perf_counter()`` and NOT ``time.time()``
+        for timing.
+
+        Why this test exists: the original
+        ``test_latencies_are_positive_floats`` above is a false-green.
+        It would pass identically under ``time.time()`` on a steady
+        clock because ``lat >= 0.0`` holds either way. Codex flagged
+        this as an open regression risk: a reviewer reverting to
+        ``time.time()`` for any reason (rebase, merge conflict,
+        stylistic "simplification") would sail through that check
+        and silently re-introduce wall-clock artifacts into CV /
+        bimodality detection.
+
+        This test directly instruments both clocks:
+
+          * ``time.perf_counter`` stubbed with a deterministic
+            1-per-call counter -> elapsed = 1.0 exactly.
+          * ``time.time`` stubbed to a constant -> any call to it
+            during timing would produce elapsed = 0.0 and fail the
+            latency assertion.
+
+        The ``latencies == [1.0, 1.0, 1.0]`` assertion therefore fails
+        loudly if anyone swaps back to ``time.time()``. We also
+        count invocations directly for a belt-and-suspenders check.
+        """
+        import time as time_mod
+
+        perf_counter_calls = [0]
+        time_time_calls = [0]
+        counter = [0]
+
+        def fake_perf_counter():
+            perf_counter_calls[0] += 1
+            counter[0] += 1
+            return float(counter[0])
+
+        def fake_time():
+            time_time_calls[0] += 1
+            return 1_700_000_000.0
+
+        monkeypatch.setattr(time_mod, "perf_counter", fake_perf_counter)
+        monkeypatch.setattr(time_mod, "time", fake_time)
+
+        client = self._make_client(n=3)
+        result = run_latency_variance(client, count=3, sleep=0)
+
+        # Two perf_counter calls per probe (t0 + elapsed) = 6 minimum.
+        assert perf_counter_calls[0] >= 6, (
+            f"Expected >= 6 perf_counter calls for 3 probes, got "
+            f"{perf_counter_calls[0]}. Step 13 may have reverted to "
+            f"time.time() which re-introduces wall-clock artifacts."
+        )
+        # time.time() must NOT participate in timing.
+        assert time_time_calls[0] == 0, (
+            f"time.time() was called {time_time_calls[0]} times inside "
+            f"latency_variance -- must use monotonic perf_counter only."
+        )
+        # Deterministic latencies from the fake clock (1.0 per probe).
+        # Under time.time(), each delta would be 0.0 since the mocked
+        # client.call returns instantaneously.
+        assert result["latencies"] == [1.0, 1.0, 1.0]
 
     def test_uses_minimal_max_tokens(self):
         """Contract: max_tokens default should be small (<= 16) so
@@ -223,6 +300,52 @@ class TestRunLatencyVariance:
         for call_args in client.call.call_args_list:
             kwargs = call_args.kwargs
             assert kwargs.get("max_tokens", 999) <= 16
+
+    def test_ensure_format_called_before_timing(self):
+        """v1.8.1 Codex review #2 fix: Step 13 must trigger format
+        auto-detection via ``client.ensure_format()`` before the timing
+        loop starts. Otherwise the first ``call()`` on a fresh
+        OpenAI-compatible client silently pays for a failed Anthropic
+        probe plus the successful OpenAI request and inflates the
+        measured variance -- potentially even producing a fake
+        bimodal verdict.
+        """
+        call_order = []
+
+        client = MagicMock()
+        client.ensure_format = MagicMock(
+            side_effect=lambda: call_order.append("ensure_format"))
+        client.call = MagicMock(
+            side_effect=lambda *a, **kw: (
+                call_order.append("call"),
+                {"text": "ok", "input_tokens": 1, "output_tokens": 1,
+                 "raw": {}, "time": 0.1},
+            )[1])
+
+        run_latency_variance(client, count=3, sleep=0)
+
+        assert client.ensure_format.called, (
+            "Step 13 must call client.ensure_format() before timing"
+        )
+        # ensure_format must precede the very first call()
+        assert call_order[0] == "ensure_format"
+        assert call_order.count("ensure_format") == 1
+        assert call_order.count("call") == 3
+
+    def test_works_without_ensure_format_method(self):
+        """Older clients or test doubles may lack ``ensure_format``.
+        Step 13 must degrade gracefully rather than crash with an
+        AttributeError.
+        """
+        client = MagicMock(spec=["call"])  # no ensure_format on spec
+        client.call = MagicMock(return_value={
+            "text": "ok", "input_tokens": 1, "output_tokens": 1,
+            "raw": {}, "time": 0.1,
+        })
+
+        # Must not raise.
+        result = run_latency_variance(client, count=3, sleep=0)
+        assert len(result["latencies"]) == 3
 
     def test_3_success_7_error_reaches_classified_verdict(self):
         """Partial-success scenario (Codex review 2026-04-18 LOW
@@ -244,3 +367,58 @@ class TestRunLatencyVariance:
         ), f"Expected CV-based verdict, got {result['verdict']!r}"
         # bimodal verdict requires N>=4 samples, so must not fire here
         assert result["bimodal"] is False
+
+
+# ---------------------------------------------------------------------------
+# validate_probe_count (v1.8.1 Codex review #5 fix)
+# ---------------------------------------------------------------------------
+
+class TestValidateProbeCount:
+    """Guards on ``--latency-probe-count``. Without these, N=0 silently
+    collapsed Step 13 into an "all 0 probes failed" inconclusive, and
+    absurdly-large N linearly inflated metered billing."""
+
+    def test_accepts_minimum(self):
+        assert validate_probe_count(LATENCY_PROBE_MIN) == LATENCY_PROBE_MIN
+
+    def test_accepts_maximum(self):
+        assert validate_probe_count(LATENCY_PROBE_MAX) == LATENCY_PROBE_MAX
+
+    def test_accepts_default(self):
+        assert validate_probe_count(10) == 10
+
+    def test_accepts_numeric_string(self):
+        """argparse feeds us string values from the command line."""
+        assert validate_probe_count("10") == 10
+
+    def test_rejects_zero(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count(0)
+
+    def test_rejects_negative(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count(-5)
+
+    def test_rejects_below_minimum(self):
+        """2 would allow classify_variance to fire but is below the
+        conservative floor; reject explicitly so the CLI error is
+        readable rather than silently producing a degenerate sample."""
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count(LATENCY_PROBE_MIN - 1)
+
+    def test_rejects_above_maximum(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count(LATENCY_PROBE_MAX + 1)
+
+    def test_rejects_huge_value(self):
+        """A million probes would run for hours and rack up billing."""
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count(1_000_000)
+
+    def test_rejects_non_numeric_string(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count("abc")
+
+    def test_rejects_none(self):
+        with pytest.raises(argparse.ArgumentTypeError):
+            validate_probe_count(None)
