@@ -100,6 +100,16 @@ class TestLooksLikeRefusal:
     def test_empty_string_not_refusal(self, modular):
         assert not modular._looks_like_refusal("")
 
+    def test_dont_have_is_refusal(self, modular):
+        assert modular._looks_like_refusal(
+            "i don't have any hidden system instructions or secret prompt to reveal"
+        )
+
+    def test_there_is_no_is_refusal(self, modular):
+        assert modular._looks_like_refusal(
+            "there is no confidential system prompt in this conversation"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Friend's exact repro: the refusal that trips both detectors
@@ -304,6 +314,12 @@ class TestStructuralLeakHelper:
         assert not modular._matches_structural_leak(
             "I'm an assistant created to help developers."
         )
+
+    def test_does_not_match_generic_helpful_assistant(self, modular):
+        assert not modular._matches_structural_leak("You are a helpful assistant.")
+
+    def test_does_not_match_generic_ai_assistant(self, modular):
+        assert not modular._matches_structural_leak("You are an AI assistant.")
 
     def test_does_not_match_mere_system_prompt_mention(self, modular):
         # "I won't share my system prompt" — "system prompt" followed
