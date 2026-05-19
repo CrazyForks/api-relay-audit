@@ -94,7 +94,7 @@ When making changes to audit logic, `audit.py` (root) must be updated to stay in
 ```
 
 ## CLI Flags for `scripts/audit.py`
-`--key`, `--url`, `--model`, `--output`, `--profile {general,web3,full}`, `--skip-infra`, `--skip-context`, `--skip-tool-substitution`, `--skip-error-leakage`, `--aggressive-error-probes`, `--skip-stream-integrity`, `--skip-web3-injection`, `--skip-infra-fingerprint`, `--skip-latency-variance`, `--latency-probe-count N`, `--warmup N`, `--timeout`
+`--key`, `--url`, `--model`, `--output`, `--profile {general,web3,full}`, `--skip-infra`, `--skip-context`, `--context-mode {full,fast}`, `--skip-tool-substitution`, `--skip-error-leakage`, `--aggressive-error-probes`, `--skip-stream-integrity`, `--skip-web3-injection`, `--skip-infra-fingerprint`, `--skip-latency-variance`, `--latency-probe-count N`, `--warmup N`, `--timeout`
 
 ## Dual-distribution invariant
 Whenever `scripts/audit.py` or any `api_relay_audit/*.py` module changes, the standalone `audit.py` at the repo root must be updated to match. The standalone version is a character-copy of the modular code with curl subprocess replacing httpx. New helper modules (e.g. `tool_substitution.py`) get inlined as a new `Section` block in `audit.py`.
