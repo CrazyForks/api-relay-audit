@@ -318,8 +318,18 @@ class TestStructuralLeakHelper:
     def test_does_not_match_generic_helpful_assistant(self, modular):
         assert not modular._matches_structural_leak("You are a helpful assistant.")
 
+    def test_does_not_match_code_fenced_generic_helpful_assistant(self, modular):
+        assert not modular._matches_structural_leak(
+            "```\nYou are a helpful assistant.\n```"
+        )
+
     def test_does_not_match_generic_ai_assistant(self, modular):
         assert not modular._matches_structural_leak("You are an AI assistant.")
+
+    def test_code_fenced_specific_template_still_matches(self, modular):
+        assert modular._matches_structural_leak(
+            "```\nYou are a coding assistant that helps with Python.\n```"
+        )
 
     def test_does_not_match_mere_system_prompt_mention(self, modular):
         # "I won't share my system prompt" — "system prompt" followed
@@ -468,6 +478,7 @@ class TestOptionDConstantsParity:
             "I'm an assistant created to help developers.",
             "I'm Claude, made by Anthropic.",
             "Your job is to help developers.",
+            "```\nYou are a helpful assistant.\n```",
             "You are correct about that.",
             "I won't share my system prompt with anyone.",
             "",

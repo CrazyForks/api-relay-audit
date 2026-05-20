@@ -2424,6 +2424,18 @@ GENERIC_NONLEAK_PERSONA_PATTERNS = (
 )
 
 
+def _strip_markdown_code_fence(text: str) -> str:
+    """Unwrap a response that is only a Markdown code span/block."""
+    stripped = text.strip()
+    if stripped.startswith("```") and stripped.endswith("```"):
+        lines = stripped.splitlines()
+        if len(lines) >= 2 and lines[0].startswith("```") and lines[-1].strip() == "```":
+            return "\n".join(lines[1:-1]).strip()
+    if stripped.startswith("`") and stripped.endswith("`") and len(stripped) >= 2:
+        return stripped[1:-1].strip()
+    return stripped
+
+
 def _looks_like_refusal(text_lower: str) -> bool:
     """True if ``text_lower`` contains a refusal phrase."""
     return any(m in text_lower for m in REFUSAL_MARKERS)
@@ -2436,7 +2448,8 @@ def _contains_claude_self_id(text_lower: str) -> bool:
 
 def _matches_structural_leak(text: str) -> bool:
     """True if ``text`` matches any structural prompt-template pattern."""
-    if any(p.search(text) for p in GENERIC_NONLEAK_PERSONA_PATTERNS):
+    normalized = _strip_markdown_code_fence(text)
+    if any(p.search(normalized) for p in GENERIC_NONLEAK_PERSONA_PATTERNS):
         return False
     return any(p.search(text) for p in STRUCTURAL_LEAK_PATTERNS)
 
