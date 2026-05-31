@@ -19,3 +19,8 @@ When a downstream fork or issue materially changes this project, credit the
 person in this file and mention the issue or PR that carried the idea. If code
 is copied rather than independently reimplemented, preserve the relevant
 license notice as well.
+
+GitHub's repository sidebar is commit-linked. When a material contribution
+arrives through an issue or downstream fork instead of a pull request,
+maintainers may land a small attribution commit on the contributor's behalf
+using their GitHub noreply address, with the issue link preserved here.
