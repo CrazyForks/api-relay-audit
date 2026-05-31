@@ -25,8 +25,8 @@
 | Codex review 已编号轮次（最大） | 6 | grep `Nth Codex review round` |
 | Codex bug 累计（最新声称） | 18 | grep `cumulative N real bug` |
 | 测试数演进 (ROADMAP) | [546, 560, 562, 586, 642, 672] | grep `Final test count: N/N passing` |
-| HEAD SHA | `040676c` | `git rev-parse HEAD` |
-| HEAD 日期 | 2026-05-31 | `git log -1` |
+| HEAD SHA | `7773bbc` | `git rev-parse HEAD` |
+| HEAD 日期 | 2026-06-01 | `git log -1` |
 
 ## 一致性自检
 

@@ -311,6 +311,34 @@ def _metrics_with_git_ref(metrics, ref):
     return out
 
 
+def _recent_metrics_with_git_refs(metrics, max_count=50):
+    try:
+        result = subprocess.run(
+            ["git", "rev-list", f"--max-count={max_count}", "HEAD"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except Exception:
+        return []
+    if result.returncode != 0:
+        return []
+
+    out = []
+    seen = set()
+    for ref in result.stdout.splitlines():
+        candidate = _metrics_with_git_ref(metrics, ref.strip())
+        if not candidate:
+            continue
+        key = (candidate.get("head_sha"), candidate.get("head_date"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(candidate)
+    return out
+
+
 def _check_file_matches_any(path, expected_texts, diff_expected):
     if not path.exists():
         return [f"{path.relative_to(REPO_ROOT)} is missing; run scripts/collect-metrics.py"]
@@ -387,13 +415,13 @@ def check_public_doc_drift(metrics):
 def check_metrics(metrics):
     failures = []
     # A committed metrics file cannot embed its own final commit SHA because
-    # changing the file changes the commit. Accept either the current HEAD
-    # (normal local pre-commit check) or HEAD^ (normal CI check after the
-    # metrics update has been committed). Older HEAD stamps still fail.
-    expected_metrics = [metrics]
-    parent_metrics = _metrics_with_git_ref(metrics, "HEAD^")
-    if parent_metrics:
-        expected_metrics.append(parent_metrics)
+    # changing the file changes the commit. Accept recent reachable commits
+    # so a follow-up docs/CI-only commit does not fail solely because the
+    # metrics file records the last metrics-bearing commit. Older HEAD stamps
+    # still fail once they fall outside the bounded checkout history.
+    expected_metrics = _recent_metrics_with_git_refs(metrics)
+    if not expected_metrics:
+        expected_metrics = [metrics]
     expected_texts = [build_markdown(m) for m in expected_metrics]
     failures.extend(
         _check_file_matches_any(METRICS_MD, expected_texts, build_markdown(metrics))
