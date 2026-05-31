@@ -1,15 +1,17 @@
-"""Dual-distribution invariant regression test.
+"""Dual-distribution invariant regression tests.
 
 The repo ships two parallel versions of the audit tool:
 
     - ``scripts/audit.py`` (modular, uses ``api_relay_audit/*.py``)
     - ``audit.py`` at repo root (standalone, zero-dep, curl-only)
 
-Any change to one must be mirrored into the other. This test slices the
-risk-matrix block from both files and asserts they are character-identical
-so that drift is caught immediately.
+The root ``audit.py`` is a generated artifact. The primary invariant is
+therefore no longer "hand-edit two files identically"; it is "the committed
+artifact must be exactly what scripts/build-standalone.py generates", plus
+focused behavior/constant regression tests for public standalone semantics.
 """
 
+import ast
 import sys
 import re
 import subprocess
@@ -22,33 +24,35 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
-def _extract_risk_matrix(path: Path) -> str:
-    """Slice the risk-matrix block between the ``# Overall rating`` comment
-    and the following ``# Output`` comment. Both files MUST contain both
-    markers, otherwise the test is broken and should fail loudly.
-    """
-    text = path.read_text(encoding="utf-8")
-    start_marker = "    # Overall rating\n"
-    end_marker = "    # Output\n"
-    start = text.find(start_marker)
-    end = text.find(end_marker, start)
-    if start == -1:
-        raise AssertionError(f"Could not find '# Overall rating' marker in {path}")
-    if end == -1:
-        raise AssertionError(f"Could not find '# Output' marker in {path}")
-    return text[start:end]
+def test_standalone_artifact_generated_from_sources():
+    """The committed root audit.py must be exactly generator output."""
+    subprocess.run(
+        [sys.executable, "scripts/build-standalone.py", "--check"],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=True,
+    )
 
 
-def test_risk_matrix_character_identical():
-    """Regression: the risk matrix code in scripts/audit.py and audit.py MUST
-    be character-identical. If this test fails, one of the two was updated
-    without the other and the dual-distribution invariant is broken.
-    """
-    modular = _extract_risk_matrix(REPO_ROOT / "scripts" / "audit.py")
-    standalone = _extract_risk_matrix(REPO_ROOT / "audit.py")
-    assert modular == standalone, (
-        "Risk matrix drift between scripts/audit.py and audit.py. "
-        "Update both files so they are character-identical."
+def test_standalone_has_no_package_or_httpx_runtime_imports():
+    """curl-download users must not need api_relay_audit/ or httpx installed."""
+    tree = ast.parse((REPO_ROOT / "audit.py").read_text(encoding="utf-8"))
+    forbidden = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "httpx" or alias.name.startswith("api_relay_audit"):
+                    forbidden.append((node.lineno, alias.name))
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if module == "httpx" or module.startswith("api_relay_audit"):
+                forbidden.append((node.lineno, module))
+
+    assert not forbidden, (
+        "Generated standalone audit.py must not import modular package "
+        f"or httpx at runtime; found {forbidden}"
     )
 
 

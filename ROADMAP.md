@@ -6,7 +6,7 @@ item has a short rationale so future contributors (including future
 iterations of the author) can quickly reconstruct why a thing is or is not
 on the list.
 
-**Last updated**: 2026-06-01 (dual-distribution generation contract and CI drift gates landed; standalone remains first-class curl-only artifact while modular source becomes the source of truth)
+**Last updated**: 2026-06-01 (Phase 3 full standalone generation landed; standalone remains first-class curl-only artifact while modular source is the source of truth)
 
 **Threat model anchor**: Liu et al., *Your Agent Is Mine: Measuring
 Malicious Intermediary Attacks on the LLM Supply Chain*, arXiv:2604.08407.
@@ -22,11 +22,11 @@ contributor, arXiv:2026-04-26, 正交威胁轴：模型替换质量欺诈 vs 我
 
 ## ✅ Shipped
 
-### v1.9 — Dual-distribution generation contract (2026-06-01)
+### v1.9 — Dual-distribution full generation (2026-06-01)
 - **Standalone product promise preserved**: root `audit.py` stays committed,
-  curl-downloadable, stdlib + curl only. It is now marked as a generated
-  artifact with an embedded modular-source digest instead of silently
-  remaining a hand-edited second implementation.
+  curl-downloadable, stdlib + curl only. It is now a fully generated
+  artifact produced from the modular source files, not a hand-edited
+  second implementation.
 - **Phase 1 contract + CI gate**: added
   `scripts/build-standalone.py --check` and GitHub Actions drift gates for
   standalone generation, public metrics, and dual-distribution parity tests.
@@ -37,6 +37,12 @@ contributor, arXiv:2026-04-26, 正交威胁轴：模型替换质量欺诈 vs 我
   `scripts.audit` re-exports for compatibility; extracted internal
   httpx/curl request mechanics into `api_relay_audit/_transport.py` while
   keeping `APIClient` public imports unchanged and standalone flat.
+- **Phase 3 generation complete**: `scripts/build-standalone.py` now
+  builds root `audit.py` end-to-end by inlining portable modular modules,
+  stripping modular imports, and replacing the client transport with a
+  stdlib + curl-only facade. Parity tests now assert the generator contract
+  plus focused behavior/constant regressions instead of relying on
+  hand-maintained character-copy checks.
 - **ROADMAP 2.4 coverage closed**: real-body `APIClient.ensure_format()`
   tests now cover modular and standalone behavior; argparse-level
   `--latency-probe-count` wiring is pinned on both distributions.
@@ -49,7 +55,7 @@ contributor, arXiv:2026-04-26, 正交威胁轴：模型替换质量欺诈 vs 我
 - **Boundary held**: no hosted dashboard, no new dependency, no Claude Code
   header impersonation, no knowledge-cutoff/0-100/4-level risk/OpenAI
   streaming auto-detect, no copied closed-source fingerprint table.
-- **Final test count**: 672/672 passing (642 baseline → 672 after current
+- **Final test count**: 673/673 passing (642 baseline → 673 after current
   guardrail/contract tests).
 
 ### v2.1 and earlier (pre-session baseline)
@@ -464,12 +470,11 @@ blast-radius vs. leverage.
    **Time estimate**: 2-3 hours (extraction + CI rewire +
    README cross-links), NOT 1 hour.
 
-**Cost of deferring further**: moderate. #1 and the Phase-2a slice of
-#2 are the highest-leverage of the four because they ship real module
-cohesion without touching standalone. Full-split Phase-2d of #2 and
-the whole of #3 are blocked on the dual-distribution decision, which
-is itself ROADMAP 2.5 item #1 (biggest-debt candidate). #4 is a front-
-end colleague conversation, not a backend task.
+**Cost of deferring further**: moderate. The former #1 and the Phase-2a
+slice of #2 are now shipped, and Phase 3 generation removed the
+dual-distribution blocker. The next backend refactor can start with the
+`scripts/audit.py` step-orchestration split; #4 remains a front-end
+colleague conversation, not a backend task.
 
 ### 2.5 v1.9 — over-engineering prune (backlog, handoff-prep triage)
 **Status**: audit done 2026-04-20 before front-end handoff; no deletions
@@ -479,12 +484,11 @@ at once.
 
 Top-5 candidates ranked by maintenance-cost-per-value (worst first):
 
-1. **Dual-distribution invariant** (`audit.py` standalone, ~2500 LOC
-   char-parity with `scripts/audit.py`): biggest recurring tax. Every
-   feature ships twice; 3 dual-distribution parity tests guard risk
-   matrix / Web3 markers / refusal vocab. **Prerequisite for deletion**:
-   data on actual standalone usage. If user telemetry shows <5% of runs
-   use `audit.py`, deprecate it; otherwise keep.
+1. **Dual-distribution invariant** — **resolved in v1.9 Phase 3**.
+   `audit.py` is now generated from modular source by
+   `scripts/build-standalone.py`; standalone remains first-class, but the
+   "write every feature twice" tax is gone. Keep this item here as the
+   historical reason Phase 3 existed, not as an active prune candidate.
 2. **`error_leakage` GitHub-issue cross-reference**: every leak marker
    maps to a real LiteLLM issue number (#5762, #8075, ...). Elegant when
    shipped but issue state rots (renames, merges, closures). Simplify
