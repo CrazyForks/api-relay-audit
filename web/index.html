@@ -6,6 +6,9 @@
 <title>API Relay Audit - AI API Relay Security Audit for LLM Proxies</title>
 <meta name="description" content="Audit AI API relays and LLM proxies for prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Runs locally; your API key stays local.">
 <link rel="canonical" href="https://toby-bridges.github.io/api-relay-audit/">
+<link rel="alternate" hreflang="en" href="https://toby-bridges.github.io/api-relay-audit/">
+<link rel="alternate" hreflang="zh-CN" href="https://toby-bridges.github.io/api-relay-audit/zh/">
+<link rel="alternate" hreflang="x-default" href="https://toby-bridges.github.io/api-relay-audit/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="API Relay Audit">
 <meta property="og:title" content="API Relay Audit - AI API Relay Security Audit">
@@ -280,6 +283,15 @@ section:first-of-type{padding-top:100px}
 .faq-a a{color:var(--accent2);text-decoration:none}
 .faq-a a:hover{text-decoration:underline}
 
+/* ── Guides ── */
+.guides-section h2{font-size:1.4rem;font-weight:700;margin-bottom:8px;text-align:center}
+.guides-sub{text-align:center;color:var(--text2);font-size:.9rem;margin-bottom:28px}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.guide-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;text-decoration:none;display:block;transition:border-color .2s,background .2s}
+.guide-card:hover{border-color:var(--accent);background:var(--card-hover);text-decoration:none}
+.guide-card h3{font-size:.95rem;margin-bottom:8px;color:var(--text)}
+.guide-card p{font-size:.8rem;color:var(--text2);line-height:1.55}
+
 /* ── Footer ── */
 footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:.78rem}
 footer a{color:var(--text2);text-decoration:none}
@@ -348,11 +360,12 @@ footer a:hover{color:var(--text)}
     <div class="nav-links">
       <a href="#demo" class="hide-mobile" data-i18n="nav_demo">Demo</a>
       <a href="#install" class="hide-mobile" data-i18n="nav_install">Quick Start</a>
+      <a href="#guides" class="hide-mobile">Guides</a>
       <a href="#faq" class="hide-mobile" data-i18n="nav_faq">FAQ</a>
       <a href="https://github.com/toby-bridges/api-relay-audit" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://x.com/li9292" target="_blank" rel="noopener noreferrer">X</a>
       <div class="lang-switch">
-        <button class="lang-btn" onclick="setLang('zh')">中</button>
+        <button class="lang-btn" onclick="window.location.href='zh/'">中</button>
         <button class="lang-btn active" onclick="setLang('en')">EN</button>
       </div>
     </div>
@@ -657,6 +670,34 @@ footer a:hover{color:var(--text)}
   </div>
 </section>
 
+<!-- ── Guides ── -->
+<section class="guides-section container" id="guides">
+  <h2>Guides for AI API Relay Security</h2>
+  <p class="guides-sub">Short, citation-friendly pages for GitHub, Google, and AI summaries.</p>
+  <div class="guide-grid">
+    <a class="guide-card" href="guides/what-is-ai-api-relay-proxy.html">
+      <h3>What is an AI API relay or LLM proxy?</h3>
+      <p>Define the trust boundary and what an intermediary can change.</p>
+    </a>
+    <a class="guide-card" href="guides/audit-claude-api-relay-safely.html">
+      <h3>How to audit a Claude API relay safely</h3>
+      <p>Run a local audit without adding another API-key trust hop.</p>
+    </a>
+    <a class="guide-card" href="guides/compare-api-relay-audit-hvoy-cctest.html">
+      <h3>api-relay-audit vs hvoy.ai vs cctest.ai</h3>
+      <p>Compare local audits, relay lookup, and web-based checks.</p>
+    </a>
+    <a class="guide-card" href="guides/detect-prompt-injection-llm-api-proxies.html">
+      <h3>Detecting prompt injection in LLM API proxies</h3>
+      <p>Understand token deltas, extraction probes, and identity signals.</p>
+    </a>
+    <a class="guide-card" href="guides/web3-wallet-prompt-injection-ai-agents.html">
+      <h3>Web3 wallet prompt injection through AI agents</h3>
+      <p>Check transfer guidance, signed-transaction refusal, and private-key refusal.</p>
+    </a>
+  </div>
+</section>
+
 <!-- ── FAQ ── -->
 <section class="faq-section container" id="faq">
   <h2 data-i18n="faq_title">FAQ</h2>
@@ -698,6 +739,8 @@ footer a:hover{color:var(--text)}
 <footer>
   <p>
     <a href="https://github.com/toby-bridges/api-relay-audit" target="_blank" rel="noopener noreferrer">GitHub</a> &nbsp;·&nbsp;
+    <a href="zh/">中文</a> &nbsp;·&nbsp;
+    <a href="sitemap.xml">Sitemap</a> &nbsp;·&nbsp;
     <a href="https://x.com/li9292" target="_blank" rel="noopener noreferrer">X @li9292</a> &nbsp;·&nbsp;
     AGPL-3.0-only License &nbsp;·&nbsp;
     <span data-i18n="footer_threat">Threat model: </span><a href="https://arxiv.org/abs/2604.08407" target="_blank" rel="noopener noreferrer">arXiv:2604.08407</a>

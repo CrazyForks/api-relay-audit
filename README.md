@@ -96,9 +96,15 @@ These probes are model-agnostic, but they are intentionally profile-gated so gen
 ## Example Report And Live Page
 
 - GitHub Pages: [toby-bridges.github.io/api-relay-audit](https://toby-bridges.github.io/api-relay-audit/)
-- Shipped / deferred / explicitly not doing: [ROADMAP.md](./ROADMAP.md)
-- Engineering diary: [FOR_JOHN.md](./FOR_JOHN.md)
+- Chinese landing page: [toby-bridges.github.io/api-relay-audit/zh/](https://toby-bridges.github.io/api-relay-audit/zh/)
+- Guides:
+  [AI API relay / LLM proxy](https://toby-bridges.github.io/api-relay-audit/guides/what-is-ai-api-relay-proxy.html),
+  [Claude relay audit](https://toby-bridges.github.io/api-relay-audit/guides/audit-claude-api-relay-safely.html),
+  [prompt injection in proxies](https://toby-bridges.github.io/api-relay-audit/guides/detect-prompt-injection-llm-api-proxies.html),
+  [Web3 wallet prompt injection](https://toby-bridges.github.io/api-relay-audit/guides/web3-wallet-prompt-injection-ai-agents.html)
 - Contributors / Credits: [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+- Security policy: [SECURITY.md](./SECURITY.md)
+- Contributing guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Social: [X @li9292](https://x.com/li9292)
 
 ## FAQ
@@ -144,6 +150,12 @@ They serve different needs. hvoy.ai is useful for relay reputation lookup, cctes
 AGPL-3.0-only. See [LICENSE](./LICENSE).
 
 This keeps modified network-service deployments accountable to the same public source-availability standard as the relay ecosystem evidence we audit.
+
+## How to Contribute
+
+Good first contributions are small, reproducible, and evidence-focused: documentation examples, deterministic detector tests, or clearer wording around `clean`, `anomaly`, and `inconclusive` results.
+
+Start with [CONTRIBUTING.md](./CONTRIBUTING.md), avoid publishing real API keys or private relay traffic, and keep changes scoped to one behavior or document.
 
 ## Star History
 
@@ -199,9 +211,12 @@ python audit.py --key <YOUR_KEY> --url <BASE_URL> --profile web3 --output report
 ## 主要入口
 
 - 在线页 / GitHub Pages: [toby-bridges.github.io/api-relay-audit](https://toby-bridges.github.io/api-relay-audit/)
+- 中文独立页: [toby-bridges.github.io/api-relay-audit/zh/](https://toby-bridges.github.io/api-relay-audit/zh/)
 - 路线图与明确不做: [ROADMAP.md](./ROADMAP.md)
 - 工程记录: [FOR_JOHN.md](./FOR_JOHN.md)
 - 贡献者 / Credits: [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+- 安全政策: [SECURITY.md](./SECURITY.md)
+- 贡献指南: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - 社交媒体: [X @li9292](https://x.com/li9292)
 
 </details>

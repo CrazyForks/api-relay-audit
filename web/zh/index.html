@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Relay Audit - AI API 中转站安全审计</title>
+<meta name="description" content="本地审计 AI API 中转站和 LLM proxy，检测 prompt injection、模型替换、工具调用改写、SSE 异常、错误泄漏和 Web3 钱包风险。API Key 留在本地。">
+<link rel="canonical" href="https://toby-bridges.github.io/api-relay-audit/zh/">
+<link rel="alternate" hreflang="en" href="https://toby-bridges.github.io/api-relay-audit/">
+<link rel="alternate" hreflang="zh-CN" href="https://toby-bridges.github.io/api-relay-audit/zh/">
+<link rel="alternate" hreflang="x-default" href="https://toby-bridges.github.io/api-relay-audit/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="API Relay Audit - AI API 中转站安全审计">
+<meta property="og:description" content="本地审计 AI API 中转站和 LLM proxy。检测 prompt injection、模型替换、工具调用改写、SSE 异常和 Web3 钱包风险。">
+<meta property="og:url" content="https://toby-bridges.github.io/api-relay-audit/zh/">
+<meta property="og:image" content="https://toby-bridges.github.io/api-relay-audit/assets/social-preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../assets/content.css">
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="../">API Relay Audit</a>
+    <div class="links">
+      <a href="../">English</a>
+      <a href="../guides/what-is-ai-api-relay-proxy.html">Guides</a>
+      <a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <div class="eyebrow">Local AI API Relay Security Audit</div>
+  <h1>AI API 中转站安全审计，本地运行，Key 留在本地</h1>
+  <p class="lead">API Relay Audit 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 流异常、错误响应泄漏，以及 Web3 钱包相关风险。</p>
+  <div class="cta">
+    <a class="button primary" href="../#install">生成审计命令</a>
+    <a class="button" href="https://github.com/toby-bridges/api-relay-audit">查看 GitHub</a>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>什么时候用</h2>
+      <p>当你准备把第三方 AI API 中转站、Claude/OpenAI 兼容代理、coding agent 自动化或钱包相关流量放进生产环境前，用它生成一份可复查的 Markdown 报告。</p>
+    </section>
+    <section class="card">
+      <h2>检测什么</h2>
+      <p>覆盖 token injection、prompt extraction、identity substitution、context truncation、tool-call rewriting、error leakage、SSE stream integrity 和 Web3 signature isolation probes。</p>
+    </section>
+    <section class="card">
+      <h2>不声称什么</h2>
+      <p>它不为任何中转站颁发安全认证，也不替代人工安全审查。`inconclusive` 不是 `clean`，被拦截或无法判断的探针会保留在报告里。</p>
+    </section>
+  </div>
+
+  <h2>快速开始</h2>
+  <pre class="code"><code>curl -sO https://raw.githubusercontent.com/toby-bridges/api-relay-audit/master/audit.py
+python audit.py --key &lt;YOUR_KEY&gt; --url &lt;BASE_URL&gt; --output report.md
+
+# Web3 / 钱包用户
+python audit.py --key &lt;YOUR_KEY&gt; --url &lt;BASE_URL&gt; --profile web3 --output report.md</code></pre>
+
+  <h2>长尾阅读</h2>
+  <ul>
+    <li><a href="../guides/what-is-ai-api-relay-proxy.html">What is an AI API relay or LLM proxy?</a></li>
+    <li><a href="../guides/audit-claude-api-relay-safely.html">How to audit a Claude API relay safely</a></li>
+    <li><a href="../guides/detect-prompt-injection-llm-api-proxies.html">Detecting prompt injection in LLM API proxies</a></li>
+    <li><a href="../guides/web3-wallet-prompt-injection-ai-agents.html">Web3 wallet prompt injection through AI agents</a></li>
+  </ul>
+</main>
+<footer>
+  <div class="wrap">AGPL-3.0-only. Threat model: <a href="https://arxiv.org/abs/2604.08407">arXiv:2604.08407</a>.</div>
+</footer>
+</body>
+</html>
