@@ -27,7 +27,7 @@ body:
     id: tool_version
     attributes:
       label: Tool Version / 工具版本
-      description: "e.g. v2.3 — run `python audit.py --version` to check"
+      description: "e.g. v2.3 — use the version shown in the audit report header"
       placeholder: "v2.3"
     validations:
       required: true

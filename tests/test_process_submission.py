@@ -2,7 +2,7 @@
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
@@ -122,8 +122,10 @@ def test_build_evidence_record():
 
 
 def test_check_account_age():
-    assert check_account_age("2026-05-29T00:00:00Z") is True
-    assert check_account_age("2020-01-01T00:00:00Z") is False
+    young = datetime.now(timezone.utc) - timedelta(days=3)
+    old = datetime.now(timezone.utc) - timedelta(days=60)
+    assert check_account_age(young.isoformat()) is True
+    assert check_account_age(old.isoformat()) is False
     assert check_account_age("") is True
     assert check_account_age(None) is True
 
