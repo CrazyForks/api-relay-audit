@@ -6,15 +6,20 @@ findings about relay operators.
 
 ## Supported Version
 
-The supported release line is the current `master` branch and the latest
-published release. Older snapshots may be useful for comparison, but security
-fixes land on `master` first.
+Until the first tagged release, the supported line is the current `master`
+branch. After tagged releases begin, the supported lines are the current
+`master` branch and the latest published release. Older snapshots may be useful
+for comparison, but security fixes land on `master` first.
 
 ## Reporting a Vulnerability
 
-If you find a vulnerability in API Relay Audit itself, please open a private
-security advisory on GitHub when available, or contact the maintainer before
-publishing exploit details.
+If you find a vulnerability in API Relay Audit itself, use GitHub private
+vulnerability reporting when it is enabled for this repository.
+
+If private vulnerability reporting is not available, open a minimal public
+issue only with non-sensitive reproduction details. Do not include secrets,
+private relay details, API keys, wallet material, or raw traffic captures in a
+public issue.
 
 Please include:
 

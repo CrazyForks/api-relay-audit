@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="API Relay Audit - AI API Relay Security Audit. Prompt Injection, Model Substitution, Tool Rewriting, SSE Anomalies. Runs Locally, Your API Key Stays Local." src="./assets/readme-banner.png">
+  <img alt="API Relay Audit - AI API Relay Security Audit. Prompt Injection, Model Substitution, Tool Rewriting, SSE Anomalies. Runs locally; your API key is sent only to the relay URL you choose." src="./assets/readme-banner.png">
 </p>
 
 # API Relay Audit
@@ -27,7 +27,7 @@
 
 ## What Is API Relay Audit?
 
-API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks while keeping your API key local.
+API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Your API key is sent only to the relay URL you choose.
 
 Use it when you rely on a third-party AI API relay, OpenAI-compatible proxy, Claude-compatible proxy, or Web3 agent workflow and want a repeatable Markdown report before trusting that relay with production or wallet-related traffic.
 
@@ -100,6 +100,7 @@ These probes are model-agnostic, but they are intentionally profile-gated so gen
 - Guides:
   [AI API relay / LLM proxy](https://toby-bridges.github.io/api-relay-audit/guides/what-is-ai-api-relay-proxy.html),
   [Claude relay audit](https://toby-bridges.github.io/api-relay-audit/guides/audit-claude-api-relay-safely.html),
+  [tool comparison](https://toby-bridges.github.io/api-relay-audit/guides/compare-api-relay-audit-hvoy-cctest.html),
   [prompt injection in proxies](https://toby-bridges.github.io/api-relay-audit/guides/detect-prompt-injection-llm-api-proxies.html),
   [Web3 wallet prompt injection](https://toby-bridges.github.io/api-relay-audit/guides/web3-wallet-prompt-injection-ai-agents.html)
 - Contributors / Credits: [CONTRIBUTORS.md](./CONTRIBUTORS.md)
@@ -166,7 +167,7 @@ Start with [CONTRIBUTING.md](./CONTRIBUTING.md), avoid publishing real API keys 
 
 ## API Relay Audit 是什么？
 
-`api-relay-audit` 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 流异常、错误响应泄漏，以及 Web3 钱包相关风险，同时让你的 API Key 保持在本地。
+`api-relay-audit` 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 流异常、错误响应泄漏，以及 Web3 钱包相关风险；你的 API Key 只会发送到你指定的中转站 URL。
 
 当你使用第三方 AI API 中转站、OpenAI-compatible proxy、Claude-compatible proxy，或者 Web3 agent 工作流时，可以用它在信任该中转站之前生成一份可复查的 Markdown 审计报告。
 
