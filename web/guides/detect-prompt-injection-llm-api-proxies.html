@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detecting Prompt Injection in LLM API Proxies</title>
+<meta name="description" content="How to detect prompt injection and hidden instruction changes in LLM API proxies with local probes and reviewable audit evidence.">
+<link rel="canonical" href="https://toby-bridges.github.io/api-relay-audit/guides/detect-prompt-injection-llm-api-proxies.html">
+<link rel="stylesheet" href="../assets/content.css">
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="../">API Relay Audit</a><div class="links"><a href="../">Home</a><a href="../zh/">中文</a><a href="https://github.com/toby-bridges/api-relay-audit">GitHub</a></div></div></header>
+<main class="wrap">
+  <div class="eyebrow">Guide</div>
+  <h1>Detecting prompt injection in LLM API proxies</h1>
+  <p class="lead">Prompt injection in an LLM API proxy means the intermediary may add hidden instructions, identity text, or policy text to your request before it reaches the model. Local detection works by combining token-delta evidence, extraction probes, identity checks, and instruction-conflict tests.</p>
+
+  <h2>Signals to look for</h2>
+  <div class="grid">
+    <section class="card"><h3>Unexpected token delta</h3><p>If a small request produces a much larger prompt-token count than expected, the relay may be adding hidden context.</p></section>
+    <section class="card"><h3>Prompt extraction</h3><p>If the model reveals hidden relay instructions under recall, translation, or continuation probes, the relay path is not transparent.</p></section>
+    <section class="card"><h3>Identity conflict</h3><p>If a Claude-compatible route leaks GPT, GLM, DeepSeek, Qwen, or other non-claimed identities, model substitution or prompt injection may be involved.</p></section>
+  </div>
+
+  <h2>Run the local probe set</h2>
+  <pre class="code"><code>python audit.py --key &lt;YOUR_KEY&gt; --url &lt;BASE_URL&gt; --output prompt-injection-audit.md</code></pre>
+
+  <h2>Why one signal is not enough</h2>
+  <p>Token counts can be noisy, extraction probes can be refused, and identity wording can produce false positives. API Relay Audit records multiple probe families so a reviewer can see whether the evidence is consistent, contradictory, or inconclusive.</p>
+
+  <h2>Useful follow-up issue</h2>
+  <p>For reproducible examples and detector gaps, track <a href="https://github.com/toby-bridges/api-relay-audit/issues/31">issue #31: relay prompt injection examples and detection gaps</a>.</p>
+</main>
+<footer><div class="wrap">Related: <a href="what-is-ai-api-relay-proxy.html">what is an LLM proxy?</a> · <a href="web3-wallet-prompt-injection-ai-agents.html">Web3 wallet prompt injection</a></div></footer>
+</body>
+</html>

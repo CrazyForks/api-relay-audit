@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>API Relay Audit - AI API Relay Security Audit for LLM Proxies</title>
-<meta name="description" content="Audit AI API relays and LLM proxies for prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Runs locally; your API key stays local.">
+<meta name="description" content="Audit AI API relays and LLM proxies for prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Runs locally; your API key is sent only to the relay URL you choose.">
 <link rel="canonical" href="https://toby-bridges.github.io/api-relay-audit/">
+<link rel="alternate" hreflang="en" href="https://toby-bridges.github.io/api-relay-audit/">
+<link rel="alternate" hreflang="zh-CN" href="https://toby-bridges.github.io/api-relay-audit/zh/">
+<link rel="alternate" hreflang="x-default" href="https://toby-bridges.github.io/api-relay-audit/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="API Relay Audit">
 <meta property="og:title" content="API Relay Audit - AI API Relay Security Audit">
@@ -14,7 +17,7 @@
 <meta property="og:image" content="https://toby-bridges.github.io/api-relay-audit/assets/social-preview.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
-<meta property="og:image:alt" content="API Relay Audit - AI API Relay Security Audit. Runs locally, your API key stays local.">
+<meta property="og:image:alt" content="API Relay Audit - AI API Relay Security Audit. Runs locally; your API key is sent only to the relay URL you choose.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="API Relay Audit - AI API Relay Security Audit">
 <meta name="twitter:description" content="Local security audit for AI API relays and LLM proxies: prompt injection, model substitution, tool rewriting, SSE anomalies, and Web3 wallet risks.">
@@ -39,7 +42,7 @@
       "url": "https://github.com/toby-bridges/api-relay-audit",
       "codeRepository": "https://github.com/toby-bridges/api-relay-audit",
       "license": "https://github.com/toby-bridges/api-relay-audit/blob/master/LICENSE",
-      "description": "Local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks while keeping your API key local."
+      "description": "Local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Your API key is sent only to the relay URL you choose."
     },
     {
       "@type": "FAQPage",
@@ -280,6 +283,15 @@ section:first-of-type{padding-top:100px}
 .faq-a a{color:var(--accent2);text-decoration:none}
 .faq-a a:hover{text-decoration:underline}
 
+/* ── Guides ── */
+.guides-section h2{font-size:1.4rem;font-weight:700;margin-bottom:8px;text-align:center}
+.guides-sub{text-align:center;color:var(--text2);font-size:.9rem;margin-bottom:28px}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.guide-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;text-decoration:none;display:block;transition:border-color .2s,background .2s}
+.guide-card:hover{border-color:var(--accent);background:var(--card-hover);text-decoration:none}
+.guide-card h3{font-size:.95rem;margin-bottom:8px;color:var(--text)}
+.guide-card p{font-size:.8rem;color:var(--text2);line-height:1.55}
+
 /* ── Footer ── */
 footer{text-align:center;padding:40px 24px;border-top:1px solid var(--border);color:var(--text3);font-size:.78rem}
 footer a{color:var(--text2);text-decoration:none}
@@ -348,11 +360,12 @@ footer a:hover{color:var(--text)}
     <div class="nav-links">
       <a href="#demo" class="hide-mobile" data-i18n="nav_demo">Demo</a>
       <a href="#install" class="hide-mobile" data-i18n="nav_install">Quick Start</a>
+      <a href="#guides" class="hide-mobile">Guides</a>
       <a href="#faq" class="hide-mobile" data-i18n="nav_faq">FAQ</a>
       <a href="https://github.com/toby-bridges/api-relay-audit" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://x.com/li9292" target="_blank" rel="noopener noreferrer">X</a>
       <div class="lang-switch">
-        <button class="lang-btn" onclick="setLang('zh')">中</button>
+        <button class="lang-btn" onclick="window.location.href='zh/'">中</button>
         <button class="lang-btn active" onclick="setLang('en')">EN</button>
       </div>
     </div>
@@ -363,14 +376,14 @@ footer a:hover{color:var(--text)}
 <section class="hero container">
   <div class="security-badge">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    <span data-i18n="hero_badge">Local execution — your API Key is never sent to a third-party server</span>
+    <span data-i18n="hero_badge">Local execution — your API key is sent only to the relay URL you choose</span>
   </div>
   <h1 data-i18n="hero_title"><span class="gradient">AI API Relay</span> Security Audit</h1>
-  <p class="hero-sub" data-i18n="hero_sub">API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks while keeping your API key local.</p>
+  <p class="hero-sub" data-i18n="hero_sub">API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Your API key is sent only to the relay URL you choose.</p>
   <div class="hero-stats">
     <div class="stat"><div class="stat-num">14</div><div class="stat-label" data-i18n="stat_steps">Audit Steps</div></div>
     <div class="stat"><div class="stat-num">6D</div><div class="stat-label" data-i18n="stat_matrix">Risk Matrix</div></div>
-    <div class="stat"><div class="stat-num">683</div><div class="stat-label" data-i18n="stat_tests">Unit Tests</div></div>
+    <div class="stat"><div class="stat-num">689</div><div class="stat-label" data-i18n="stat_tests">Unit Tests</div></div>
     <div class="stat"><div class="stat-num">0</div><div class="stat-label" data-i18n="stat_deps">Dependencies (standalone)</div></div>
   </div>
   <div class="hero-cta">
@@ -425,7 +438,7 @@ footer a:hover{color:var(--text)}
     <div class="flow-vs">
       <span class="flow-vs-good">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-        <span data-i18n="flow_good">api-relay-audit: Key stays on YOUR machine</span>
+        <span data-i18n="flow_good">api-relay-audit: no extra checker server sees your key</span>
       </span>
       <span style="color:var(--text3)">vs</span>
       <span class="flow-vs-bad">
@@ -457,7 +470,7 @@ footer a:hover{color:var(--text)}
         <input class="form-input" type="password" id="f-key" placeholder="sk-..." spellcheck="false" autocomplete="off">
         <div class="form-hint">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="vertical-align:middle"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          <span data-i18n="form_key_hint">Stays in your browser. Only used to generate the CLI command below — never sent anywhere.</span>
+          <span data-i18n="form_key_hint">Stays in your browser to generate the command. When you run it, the key is sent only to your chosen relay URL.</span>
         </div>
       </div>
       <div class="form-row">
@@ -543,7 +556,7 @@ footer a:hover{color:var(--text)}
 
     <p class="agent-note">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="vertical-align:middle"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      <span data-i18n="agent_security">Same security model — the agent runs locally on your machine, Key never touches a third-party server.</span>
+      <span data-i18n="agent_security">Same security model — the agent runs locally on your machine, and the key is sent only to your chosen relay URL.</span>
     </p>
   </div><!-- /tab-agent -->
 
@@ -555,7 +568,7 @@ footer a:hover{color:var(--text)}
 
     <p class="install-note">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      <span data-i18n="install_security">Your API Key is only sent to the relay URL you specify. No telemetry, no third-party servers.</span>
+      <span data-i18n="install_security">Your API key is only sent to the relay URL you specify; it is not sent to API Relay Audit or an extra web checker.</span>
     </p>
   </div>
 </section>
@@ -598,7 +611,7 @@ footer a:hover{color:var(--text)}
     <div class="step">
       <div class="step-num" data-i18n="step_id_label">Step 5</div>
       <h3 data-i18n="step_id_title">Identity Substitution</h3>
-      <p data-i18n="step_id_desc">24 keywords detect if "Claude" is actually GPT, DeepSeek, GLM, Qwen, or other models in disguise. Anchor phrases confirm true identity.</p>
+      <p data-i18n="step_id_desc">An identity keyword set detects if "Claude" is actually GPT, DeepSeek, GLM, Qwen, or other models in disguise. Anchor phrases confirm true identity.</p>
     </div>
     <div class="step">
       <div class="step-num" data-i18n="step_ctx_label">Step 7</div>
@@ -648,12 +661,40 @@ footer a:hover{color:var(--text)}
       <tr><td data-i18n="cmp_stream">Stream Integrity (SSE)</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="cross">&#10005;</td></tr>
       <tr><td data-i18n="cmp_web3">Web3 Injection</td><td class="check">&#10003;</td><td class="cross">&#10005;</td><td class="cross">&#10005;</td></tr>
       <tr><td data-i18n="cmp_channel">Channel Fingerprint</td><td class="soon">Soon</td><td class="cross">&#10005;</td><td class="check">&#10003;</td></tr>
-      <tr><td data-i18n="cmp_local">Local Execution (Key stays local)</td><td class="check">&#10003;</td><td class="cross">&#10005;</td><td class="cross">&#10005;</td></tr>
+      <tr><td data-i18n="cmp_local">Local Execution (No extra checker server)</td><td class="check">&#10003;</td><td class="cross">&#10005;</td><td class="cross">&#10005;</td></tr>
       <tr><td data-i18n="cmp_oss">Fully Open Source</td><td class="check">&#10003;</td><td class="cross">Partial</td><td class="cross">&#10005;</td></tr>
       <tr><td data-i18n="cmp_leaderboard">Public Leaderboard</td><td class="cross">&#10005;</td><td class="check">&#10003;</td><td class="cross">&#10005;</td></tr>
       <tr><td data-i18n="cmp_report">Structured Audit Report</td><td class="check">&#10003;</td><td class="cross">&#10005;</td><td class="cross">&#10005;</td></tr>
     </tbody>
   </table>
+  </div>
+</section>
+
+<!-- ── Guides ── -->
+<section class="guides-section container" id="guides">
+  <h2>Guides for AI API Relay Security</h2>
+  <p class="guides-sub">Short, citation-friendly pages for GitHub, Google, and AI summaries.</p>
+  <div class="guide-grid">
+    <a class="guide-card" href="guides/what-is-ai-api-relay-proxy.html">
+      <h3>What is an AI API relay or LLM proxy?</h3>
+      <p>Define the trust boundary and what an intermediary can change.</p>
+    </a>
+    <a class="guide-card" href="guides/audit-claude-api-relay-safely.html">
+      <h3>How to audit a Claude API relay safely</h3>
+      <p>Run a local audit without adding another API-key trust hop.</p>
+    </a>
+    <a class="guide-card" href="guides/compare-api-relay-audit-hvoy-cctest.html">
+      <h3>api-relay-audit vs hvoy.ai vs cctest.ai</h3>
+      <p>Compare local audits, relay lookup, and web-based checks.</p>
+    </a>
+    <a class="guide-card" href="guides/detect-prompt-injection-llm-api-proxies.html">
+      <h3>Detecting prompt injection in LLM API proxies</h3>
+      <p>Understand token deltas, extraction probes, and identity signals.</p>
+    </a>
+    <a class="guide-card" href="guides/web3-wallet-prompt-injection-ai-agents.html">
+      <h3>Web3 wallet prompt injection through AI agents</h3>
+      <p>Check transfer guidance, signed-transaction refusal, and private-key refusal.</p>
+    </a>
   </div>
 </section>
 
@@ -698,6 +739,8 @@ footer a:hover{color:var(--text)}
 <footer>
   <p>
     <a href="https://github.com/toby-bridges/api-relay-audit" target="_blank" rel="noopener noreferrer">GitHub</a> &nbsp;·&nbsp;
+    <a href="zh/">中文</a> &nbsp;·&nbsp;
+    <a href="sitemap.xml">Sitemap</a> &nbsp;·&nbsp;
     <a href="https://x.com/li9292" target="_blank" rel="noopener noreferrer">X @li9292</a> &nbsp;·&nbsp;
     AGPL-3.0-only License &nbsp;·&nbsp;
     <span data-i18n="footer_threat">Threat model: </span><a href="https://arxiv.org/abs/2604.08407" target="_blank" rel="noopener noreferrer">arXiv:2604.08407</a>
@@ -963,9 +1006,9 @@ let currentLang='en';
 const i18n={
   zh:{
     nav_demo:"Demo",nav_install:"快速开始",nav_faq:"FAQ",
-    hero_badge:"本地运行 — API Key 不经过任何第三方服务器",
+    hero_badge:"本地运行 — API Key 只发送到你指定的中转站 URL",
     hero_title:'<span class="gradient">AI API 中转站</span>安全审计',
-    hero_sub:"API Relay Audit 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 异常、错误响应泄漏和 Web3 钱包风险，同时让你的 API Key 保持在本地。",
+    hero_sub:"API Relay Audit 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 异常、错误响应泄漏和 Web3 钱包风险；你的 API Key 只会发送到你指定的中转站 URL。",
     what_title:"API Relay Audit 是什么？",
     what_desc:"API Relay Audit 是一个本地安全审计工具，用来检查第三方 AI API 中转站和 LLM proxy 是否注入 prompt、替换模型、改写工具输出、在错误响应中泄漏凭证，或产生流完整性异常。",
     use_title:"什么时候使用",
@@ -989,7 +1032,7 @@ const i18n={
     step_infra_label:"Step 1-2",step_infra_title:"基础设施侦察",step_infra_desc:"DNS、CDN、SSL 证书、管理面板指纹、模型列表枚举 — 了解中转站背后的技术栈。",
     step_inject_label:"Step 3",step_inject_title:"Token 注入 (AC-1)",step_inject_desc:"对比实际 token 用量与预期值。隐藏 system prompt 注入会增加额外 token — 差值揭示注入量。",
     step_extract_label:"Step 4 & 6",step_extract_title:"Prompt 提取",step_extract_desc:"3 种攻击向量尝试提取隐藏 system prompt：直接复述、翻译法、JSON 接龙。加上越狱防护测试。",
-    step_id_label:"Step 5",step_id_title:"身份替换",step_id_desc:'24 个关键词检测 "Claude" 是否实际是 GPT、DeepSeek、GLM、Qwen 或其他模型。锚点短语确认真实身份。',
+    step_id_label:"Step 5",step_id_title:"身份替换",step_id_desc:'身份关键词集合检测 "Claude" 是否实际是 GPT、DeepSeek、GLM、Qwen 或其他模型。锚点短语确认真实身份。',
     step_ctx_label:"Step 7",step_ctx_title:"上下文截断",step_ctx_desc:"5 个 canary 标记 + 二分查找精确定位真实上下文窗口边界。你的 200K context 真的有 200K 吗？",
     step_tool_label:"Step 8 (AC-1.a)",step_tool_title:"工具调用改写",step_tool_desc:"检测中转站是否在返回路径上偷改包安装命令 — 代理层面的拼写投毒供应链攻击。",
     step_err_label:"Step 9 (AC-2)",step_err_title:"错误响应泄漏",step_err_desc:"7 种故意破坏的请求探测 API Key、环境变量、文件路径、LiteLLM 内部字段是否在错误响应中泄漏。",
@@ -999,14 +1042,14 @@ const i18n={
     cmp_inject:"Token 注入",cmp_prompt:"Prompt 提取",cmp_identity:"身份替换",cmp_jailbreak:"越狱防护",
     cmp_context:"上下文截断",cmp_tool:"工具调用改写 (AC-1.a)",cmp_error:"错误响应泄漏 (AC-2)",
     cmp_stream:"流完整性 (SSE)",cmp_web3:"Web3 注入",cmp_channel:"通道指纹",
-    cmp_local:"本地运行 (Key 不外传)",cmp_oss:"完全开源",cmp_leaderboard:"公开排行榜",cmp_report:"结构化审计报告",
+    cmp_local:"本地运行 (无额外检测服务器)",cmp_oss:"完全开源",cmp_leaderboard:"公开排行榜",cmp_report:"结构化审计报告",
     install_title:"开始审计",install_sub:"填写你的中转站信息 — 我们生成命令，你在本地运行。",
     flow_title:"你的 Key 如何流转 — 关键区别",
     flow_you:"你",flow_local:"你的终端",flow_relay:"你的中转站",
-    flow_good:"api-relay-audit: Key 始终在你的机器上",
+    flow_good:"api-relay-audit: 没有额外检测服务器接触你的 Key",
     flow_bad:"网页工具: Key 先经过第三方服务器",
     form_url_label:"API 接口地址",form_url_hint:"你要审计的中转站 base URL",
-    form_key_label:"API Key",form_key_hint:"仅在浏览器内使用，生成下方命令 — 不会发送到任何地方。",
+    form_key_label:"API Key",form_key_hint:"仅在浏览器内用于生成下方命令；运行命令时只会发送到你指定的中转站 URL。",
     form_model_label:"模型",form_generate:"生成审计命令",
     cmd_step1:"打开终端（macOS: Terminal.app / Windows: PowerShell）",
     cmd_step2:"粘贴以下命令并回车 — 约 2 分钟完成：",
@@ -1019,8 +1062,8 @@ const i18n={
     agent_step2_title:"一句话触发",agent_step2_desc:"打开 Claude Code，说：",
     agent_trigger:'\u201c帮我审计这个中转站：https://your-relay.com/v1，key 是 sk-xxx\u201d',
     agent_step3_title:"Agent 全自动执行",agent_step3_desc:"Claude Code 自动下载脚本、运行 14 步检测、呈现结果 — 你只需要看报告。",
-    agent_security:"同样的安全模型 — agent 在你的本地机器上运行，Key 不经过任何第三方服务器。",
-    term_downloading:"audit.py 已下载 (2,847 行, 零依赖)",
+    agent_security:"同样的安全模型 — agent 在你的本地机器上运行，Key 只会发送到你指定的中转站 URL。",
+    term_downloading:"audit.py 已下载 (零 Python 包依赖)",
     term_step1:"[Step 1/14] 基础设施侦察...",
     term_step1_out:"  CDN: Cloudflare | 系统: New API | SSL: Let's Encrypt",
     term_step3:"[Step 3/14] Token 注入检测...",
@@ -1033,7 +1076,7 @@ const i18n={
     term_open_hint:"用任意文本编辑器打开 .md 文件查看完整报告",
     copy_btn:"复制",copied_btn:"已复制!",
     cost_note:"每次审计消耗约 $0.2-0.5 API 费用（由你的 provider 计费）",
-    install_security:"你的 API Key 仅发送到你指定的中转站地址。无遥测、无第三方服务器。",
+    install_security:"你的 API Key 仅发送到你指定的中转站地址；不会发送到 API Relay Audit 或额外网页检测服务。",
     faq_title:"常见问题",
     faq_q1:"什么是 API 中转站或 LLM proxy？",
     faq_a1:'API 中转站或 LLM proxy 是介于你和 Anthropic、OpenAI 等 AI provider 之间的第三方服务。它会转发你的请求，但也可能注入隐藏指令、替换模型、截断上下文、改写工具输出，或在错误响应中泄漏凭证。',
@@ -1055,9 +1098,9 @@ const i18n={
   },
   en:{
     nav_demo:"Demo",nav_install:"Quick Start",nav_faq:"FAQ",
-    hero_badge:"Local execution — your API Key is never sent to a third-party server",
+    hero_badge:"Local execution — your API key is sent only to the relay URL you choose",
     hero_title:'<span class="gradient">AI API Relay</span> Security Audit',
-    hero_sub:"API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks while keeping your API key local.",
+    hero_sub:"API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Your API key is sent only to the relay URL you choose.",
     what_title:"What is API Relay Audit?",
     what_desc:"API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It checks whether a third-party relay injects prompts, substitutes models, rewrites tool output, leaks credentials in error responses, or produces stream integrity anomalies.",
     use_title:"When to use it",
@@ -1080,7 +1123,7 @@ const i18n={
     step_infra_label:"Step 1-2",step_infra_title:"Infrastructure Recon",step_infra_desc:"DNS, CDN, SSL certificate, management panel fingerprint, model list enumeration — understand what's behind the relay.",
     step_inject_label:"Step 3",step_inject_title:"Token Injection (AC-1)",step_inject_desc:"Compares actual token usage against expected values. Hidden system prompt injection adds extra tokens — the delta reveals it.",
     step_extract_label:"Step 4 & 6",step_extract_title:"Prompt Extraction",step_extract_desc:"3 attack vectors attempt to extract hidden system prompts: verbatim recall, translation trick, JSON continuation. Plus jailbreak resistance tests.",
-    step_id_label:"Step 5",step_id_title:"Identity Substitution",step_id_desc:'24 keywords detect if "Claude" is actually GPT, DeepSeek, GLM, Qwen, or other models in disguise. Anchor phrases confirm true identity.',
+    step_id_label:"Step 5",step_id_title:"Identity Substitution",step_id_desc:'An identity keyword set detects if "Claude" is actually GPT, DeepSeek, GLM, Qwen, or other models in disguise. Anchor phrases confirm true identity.',
     step_ctx_label:"Step 7",step_ctx_title:"Context Truncation",step_ctx_desc:"5 canary markers + binary search pinpoint the real context window boundary. Is your 200K context really 200K?",
     step_tool_label:"Step 8 (AC-1.a)",step_tool_title:"Tool-Call Rewriting",step_tool_desc:"Checks if the relay silently modifies package install commands in responses — typosquatting supply-chain attacks at the proxy layer.",
     step_err_label:"Step 9 (AC-2)",step_err_title:"Error Response Leakage",step_err_desc:"7 deliberately broken requests probe for API key, env vars, file paths, and LiteLLM internals leaking in error responses.",
@@ -1090,14 +1133,14 @@ const i18n={
     cmp_inject:"Token Injection",cmp_prompt:"Prompt Extraction",cmp_identity:"Identity Substitution",cmp_jailbreak:"Jailbreak Resistance",
     cmp_context:"Context Truncation",cmp_tool:"Tool-Call Rewriting (AC-1.a)",cmp_error:"Error Response Leakage (AC-2)",
     cmp_stream:"Stream Integrity (SSE)",cmp_web3:"Web3 Injection",cmp_channel:"Channel Fingerprint",
-    cmp_local:"Local Execution (Key stays local)",cmp_oss:"Fully Open Source",cmp_leaderboard:"Public Leaderboard",cmp_report:"Structured Audit Report",
+    cmp_local:"Local Execution (No extra checker server)",cmp_oss:"Fully Open Source",cmp_leaderboard:"Public Leaderboard",cmp_report:"Structured Audit Report",
     install_title:"Start Your Audit",install_sub:"Fill in your relay info — we generate the command, you run it locally.",
     flow_title:"How your Key flows — the critical difference",
     flow_you:"You",flow_local:"Your Terminal",flow_relay:"Your Relay",
-    flow_good:"api-relay-audit: Key stays on YOUR machine",
+    flow_good:"api-relay-audit: no extra checker server sees your key",
     flow_bad:"Web tools: Key goes to a 3rd-party server first",
     form_url_label:"API Endpoint URL",form_url_hint:"The base URL of the relay you want to audit",
-    form_key_label:"API Key",form_key_hint:"Stays in your browser. Only used to generate the CLI command below — never sent anywhere.",
+    form_key_label:"API Key",form_key_hint:"Stays in your browser to generate the command. When you run it, the key is sent only to your chosen relay URL.",
     form_model_label:"Model",form_generate:"Generate Audit Command",
     cmd_step1:"Open your terminal (macOS: Terminal.app / Windows: PowerShell)",
     cmd_step2:"Paste this command and press Enter — takes ~2 minutes:",
@@ -1110,8 +1153,8 @@ const i18n={
     agent_step2_title:"Trigger with one sentence",agent_step2_desc:"Open Claude Code and say:",
     agent_trigger:'"Audit this relay: https://your-relay.com/v1, my key is sk-xxx"',
     agent_step3_title:"Agent does everything",agent_step3_desc:"Claude Code automatically downloads the script, runs all 14 steps, and presents the findings — you just read the result.",
-    agent_security:"Same security model — the agent runs locally on your machine, Key never touches a third-party server.",
-    term_downloading:"audit.py downloaded (2,847 lines, zero dependencies)",
+    agent_security:"Same security model — the agent runs locally on your machine, and the key is sent only to your chosen relay URL.",
+    term_downloading:"audit.py downloaded (zero Python package dependencies)",
     term_step1:"[Step 1/14] Infrastructure recon...",
     term_step1_out:"  CDN: Cloudflare | System: New API | SSL: Let's Encrypt",
     term_step3:"[Step 3/14] Token injection detection...",
@@ -1124,7 +1167,7 @@ const i18n={
     term_open_hint:"Open the .md file with any text editor to view the full report",
     copy_btn:"Copy",copied_btn:"Copied!",
     cost_note:"Each audit costs ~$0.2-0.5 in API usage (billed by your provider)",
-    install_security:"Your API Key is only sent to the relay URL you specify. No telemetry, no third-party servers.",
+    install_security:"Your API key is only sent to the relay URL you specify; it is not sent to API Relay Audit or an extra web checker.",
     faq_title:"FAQ",
     faq_q1:"What is an API relay or LLM proxy?",
     faq_a1:'An API relay or LLM proxy is a third-party service between you and an AI provider such as Anthropic or OpenAI. It forwards your requests upstream, but it can also inject hidden instructions, swap models, truncate context, rewrite tool output, or leak credentials in error responses.',

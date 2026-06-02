@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="API Relay Audit - AI API Relay Security Audit. Prompt Injection, Model Substitution, Tool Rewriting, SSE Anomalies. Runs Locally, Your API Key Stays Local." src="./assets/readme-banner.png">
+  <img alt="API Relay Audit - AI API Relay Security Audit. Prompt Injection, Model Substitution, Tool Rewriting, SSE Anomalies. Runs locally; your API key is sent only to the relay URL you choose." src="./assets/readme-banner.png">
 </p>
 
 # API Relay Audit
@@ -27,7 +27,7 @@
 
 ## What Is API Relay Audit?
 
-API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks while keeping your API key local.
+API Relay Audit is a local security audit tool for AI API relays and LLM proxies. It detects prompt injection, model substitution, tool rewriting, SSE anomalies, error leakage, and Web3 wallet risks. Your API key is sent only to the relay URL you choose.
 
 Use it when you rely on a third-party AI API relay, OpenAI-compatible proxy, Claude-compatible proxy, or Web3 agent workflow and want a repeatable Markdown report before trusting that relay with production or wallet-related traffic.
 
@@ -96,9 +96,16 @@ These probes are model-agnostic, but they are intentionally profile-gated so gen
 ## Example Report And Live Page
 
 - GitHub Pages: [toby-bridges.github.io/api-relay-audit](https://toby-bridges.github.io/api-relay-audit/)
-- Shipped / deferred / explicitly not doing: [ROADMAP.md](./ROADMAP.md)
-- Engineering diary: [FOR_JOHN.md](./FOR_JOHN.md)
+- Chinese landing page: [toby-bridges.github.io/api-relay-audit/zh/](https://toby-bridges.github.io/api-relay-audit/zh/)
+- Guides:
+  [AI API relay / LLM proxy](https://toby-bridges.github.io/api-relay-audit/guides/what-is-ai-api-relay-proxy.html),
+  [Claude relay audit](https://toby-bridges.github.io/api-relay-audit/guides/audit-claude-api-relay-safely.html),
+  [tool comparison](https://toby-bridges.github.io/api-relay-audit/guides/compare-api-relay-audit-hvoy-cctest.html),
+  [prompt injection in proxies](https://toby-bridges.github.io/api-relay-audit/guides/detect-prompt-injection-llm-api-proxies.html),
+  [Web3 wallet prompt injection](https://toby-bridges.github.io/api-relay-audit/guides/web3-wallet-prompt-injection-ai-agents.html)
 - Contributors / Credits: [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+- Security policy: [SECURITY.md](./SECURITY.md)
+- Contributing guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - Social: [X @li9292](https://x.com/li9292)
 
 ## FAQ
@@ -145,6 +152,12 @@ AGPL-3.0-only. See [LICENSE](./LICENSE).
 
 This keeps modified network-service deployments accountable to the same public source-availability standard as the relay ecosystem evidence we audit.
 
+## How to Contribute
+
+Good first contributions are small, reproducible, and evidence-focused: documentation examples, deterministic detector tests, or clearer wording around `clean`, `anomaly`, and `inconclusive` results.
+
+Start with [CONTRIBUTING.md](./CONTRIBUTING.md), avoid publishing real API keys or private relay traffic, and keep changes scoped to one behavior or document.
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=toby-bridges/api-relay-audit&type=Date)](https://www.star-history.com/#toby-bridges/api-relay-audit&Date)
@@ -154,7 +167,7 @@ This keeps modified network-service deployments accountable to the same public s
 
 ## API Relay Audit 是什么？
 
-`api-relay-audit` 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 流异常、错误响应泄漏，以及 Web3 钱包相关风险，同时让你的 API Key 保持在本地。
+`api-relay-audit` 是一个本地运行的 AI API 中转站 / LLM proxy 安全审计工具。它检测 prompt injection、模型替换、工具调用改写、SSE 流异常、错误响应泄漏，以及 Web3 钱包相关风险；你的 API Key 只会发送到你指定的中转站 URL。
 
 当你使用第三方 AI API 中转站、OpenAI-compatible proxy、Claude-compatible proxy，或者 Web3 agent 工作流时，可以用它在信任该中转站之前生成一份可复查的 Markdown 审计报告。
 
@@ -199,9 +212,12 @@ python audit.py --key <YOUR_KEY> --url <BASE_URL> --profile web3 --output report
 ## 主要入口
 
 - 在线页 / GitHub Pages: [toby-bridges.github.io/api-relay-audit](https://toby-bridges.github.io/api-relay-audit/)
+- 中文独立页: [toby-bridges.github.io/api-relay-audit/zh/](https://toby-bridges.github.io/api-relay-audit/zh/)
 - 路线图与明确不做: [ROADMAP.md](./ROADMAP.md)
 - 工程记录: [FOR_JOHN.md](./FOR_JOHN.md)
 - 贡献者 / Credits: [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+- 安全政策: [SECURITY.md](./SECURITY.md)
+- 贡献指南: [CONTRIBUTING.md](./CONTRIBUTING.md)
 - 社交媒体: [X @li9292](https://x.com/li9292)
 
 </details>
